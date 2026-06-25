@@ -1,0 +1,22 @@
+included:
+  - Sources
+  - Tests
+
+disabled_rules:
+  - opening_brace        # conflicts with SwiftFormat's wrapMultilineStatementBraces
+  - trailing_comma       # conflicts with SwiftFormat's trailingCommas
+  - todo                 # TODOs are allowed; not gated on an issue link
+  - redundant_sendable
+  - optional_data_string_conversion
+
+opt_in_rules:
+  - no_magic_numbers
+
+line_length:
+  warning: 160
+  error: 160
+  ignores_comments: true
+
+nesting:
+  type_level: 3
+  function_level: 3
