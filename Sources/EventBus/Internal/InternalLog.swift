@@ -18,9 +18,12 @@ import os
 
 /// Lightweight logging shim backed by the unified logging system (`os.Logger`).
 ///
-/// Replaces the former external logging dependency. The `tag` is prefixed onto
-/// each message so logs can be filtered and searched the same way as before.
-struct EventBusLog: Sendable {
+/// The `tag` is prefixed onto each message so logs can be filtered and searched.
+///
+/// Message content is logged at `.private`: it is redacted in captured and
+/// release logs and only shown when a debugger is attached. The `tag` is
+/// `.public`. Avoid logging sensitive data regardless of privacy level.
+struct InternalLog: Sendable {
     private let backing = Logger(subsystem: Constants.subsystem, category: Constants.category)
 
     private enum Constants {
@@ -29,17 +32,17 @@ struct EventBusLog: Sendable {
     }
 
     func info(_ message: String, tag: String) {
-        backing.info("[\(tag, privacy: .public)] \(message, privacy: .public)")
+        backing.info("[\(tag, privacy: .public)] \(message, privacy: .private)")
     }
 
     func warning(_ message: String, tag: String) {
-        backing.warning("[\(tag, privacy: .public)] \(message, privacy: .public)")
+        backing.warning("[\(tag, privacy: .public)] \(message, privacy: .private)")
     }
 
     func debug(_ message: String, tag: String) {
-        backing.debug("[\(tag, privacy: .public)] \(message, privacy: .public)")
+        backing.debug("[\(tag, privacy: .public)] \(message, privacy: .private)")
     }
 }
 
 /// Shared EventBus logger instance, internal to the module.
-let logger = EventBusLog()
+let logger = InternalLog()

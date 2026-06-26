@@ -346,6 +346,8 @@ The log printouts contain the following information:
 - an error readout if needed
 - a date/timestamp of the log
 
+> **Logging and sensitive data:** log output, including formatted payloads, is written to the unified logging system (`os.Logger`). Message content is logged at the `.private` privacy level, so it is redacted in captured and release logs and shown only while a debugger is attached — but you should still avoid logging personal or otherwise sensitive data through `LogPoint` payload formatters. Treat the logger as a development and debugging aid.
+
 An advantage to using the `EventBusLogger` is that all `LogPoint`s are declared in an array and configured into the `EventBus` at initialization time, so are collected in one place rather than scattered through the code. So it is easy to save off lists of `LogPoint`s for each process that can be reused when you are troubleshooting the process rather than having to be erased and re-created throughout the codebase for each debugging effort.
 
 The sequence indices are especially useful to help debug race conditions, since they indicate the exact order in which the `LogPoint`s are executed globally across the `EventBus`, so you can see if they execute in unexpected order.
