@@ -20,3 +20,7 @@ line_length:
 nesting:
   type_level: 3
   function_level: 3
+
+function_body_length:
+  warning: 100
+  error: 100
