@@ -13,3 +13,7 @@
 ## How to Test
 
 <!-- Steps to verify. CI runs `swift build`, `swift test`, and `swiftlint lint`. -->
+
+## Checklist
+
+- [ ] Updated `CHANGELOG.md` under `## [Unreleased]` (or N/A for non-user-facing changes)
