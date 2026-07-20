@@ -2,12 +2,15 @@
 
 ## Overview
 
-Pipelining organizes a multi-step process into a chain of small functions, each consuming the previous step's output. This keeps the top-level process readable while integration details and logic move into the helpers. It fits naturally with `BusEvent` protocols: events already carry the process state in their payloads and the bus integration to send and chain successors, so they naturally become the data passing through the pipeline.
+Pipelining organizes a multi-step process into a chain of small functions, each consuming the previous step's output. This keeps the top-level process readable while integration details and logic move into subroutines. It fits naturally with `BusEvent` protocols: events already carry the process state in their payloads and the bus integration to send and chain successors, so they naturally become the data passing through the pipeline.
 
 A controller that uses pipelining can read like the process it is modeling. This example shows the top level of a pipeline process:
 
 ```swift
-return try await inputEvent.selectColor()?.selectFood()?.writeCritique()
+return try await inputEvent
+    .selectColor()?
+    .selectFood()?
+    .writeCritique()
 ```
 
 See ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsPipelining/pipelinedControllerFlow()`` for a complete working example.
@@ -34,7 +37,7 @@ else {
 return try await foodEvent.writeCritique()
 ```
 
-The same flow is much more efficiently expressed as a pipeline. In an `EventBus` pipeline, event payloads define the evolving process data state, and the pipeline subroutines are defined as `TrackedBusEvent` object member functions. Each pipeline function is defined in an extension on the event type whose payload it uses as input. The input event is available as `self`, and its typed payload is available through `busEvent.payload`.
+The same flow is more efficiently expressed as a pipeline. In an `EventBus` pipeline, event payloads define the evolving process data state, and the pipeline subroutines are defined as `TrackedBusEvent` object member functions. Each pipeline function is defined in an extension on the event type whose payload it uses as input. The input event is available as `self`, and its typed payload is available through `busEvent.payload`.
 
 This makes the top-level process simple and easy to read:
 
@@ -57,7 +60,7 @@ private extension ColorSelectionEvent.SelectColor.TrackedResponse {
 }
 ```
 
-This removes repeated local declarations while keeping the data accessible where it is needed. The top-level handler shows the order of the work, while each event extension owns the data translation needed for each step.
+This removes repeated local declarations while keeping the data accessible where it is needed. The top-level handler shows the order of the work, while the subroutines declared in event extensions own the data integration needed for each step.
 
 ## Factoring A Process Into A Pipeline
 
@@ -386,3 +389,58 @@ private extension PipeliningColoredFoodControllerEvent.MakeColoredFood.TrackedRe
 ```
 
 In most cases cancellation does not have to be caught at the top level of a process. If state changes are atomic, then cancellation before the state change can drain out of the top-level handler, and cancellation after the state change means the process has already completed from the application's point of view, so it's too late to cancel. However, if your process includes incremental state updates, partial recovery, or degraded states, catching `CancellationError` and attempting cleanup may need to be part of your solution.
+
+## Enabling BusEvent Extensions
+
+You may have encountered a compiler error when you tried to extend a `BusEvent` or `TrackedBusEvent` type to make a pipeline function.
+The compiler error would be something like:
+`Extension of type 'YourTypeName.TrackedRequest' (aka 'TrackedBusEvent<ObjectIdentifier, YourPayloadType>') must be declared as an extension of 'TrackedBusEvent<ObjectIdentifier, YourPayloadType>'`
+
+The problem is a Swift language limitation. When you declare events that conform to the `SimpleBusEventType` or any of the Handler types, the protocol extensions internally declare the event types as needed for triggering events, requests, and responses. But Swift doesn't reference those as valid when you declare your conforming event.
+
+There are several ways to fix this. Easiest is to use macros that the `EventBus` project provides that declare all the right definitions for you. If you look at the ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsPipelining`` file where the shared event declarations are at the top, you'll see examples like this:
+
+```swift
+    @RequestResponseHandlerTypes
+    enum SelectColor: RequestResponsePayloadHandler {
+        typealias ResponsePayload = String
+    }
+```
+
+Use the corresponding type macro for every event and handler declaration to generate the event aliases needed by extensions. The macro must match the protocol adopted by the declaration:
+
+    @SimpleBusEventTypes
+    @ResponseHandlerTypes
+    @RequestResponseHandlerTypes
+    @LinkedEventHandlerTypes
+
+Alternatively, if you don't want to use macros, you can declare the event types within your event declaration manually, like this:
+
+```swift
+    enum SelectColor: RequestResponsePayloadHandler {
+        typealias ResponsePayload = String
+        typealias TrackedResponse = TrackedBusEvent<ObjectIdentifier, ResponsePayload>
+    }
+```
+
+Or you can use the internal base type for the extension:
+
+```swift
+private extension TrackedBusEvent<ObjectIdentifier, ()> {
+    func selectColor() async throws -> ColorSelectionEvent.SelectColor.TrackedResponse? {
+        try Task.checkCancellation()
+        return try await ColorSelectionEvent.SelectColor.sendAndWaitForResponse(inputEvent: self)
+    }
+}
+```
+
+We'd recommend using the macros to simplify your code and keep internal type details from leaking out of the event definitions, but any of these solutions will work.
+
+There are extensions to these macros that help reduce integration boilerplate for events that have complex payloads. These macros internally call the payload initializers and put the initializer's fields directly into the EventBus integration methods for declaring and sending events. For these macros, mark the payload initializer with `@BusEventPayloadInit`, then use the matching payload-and-types macro:
+
+    @SimpleBusEventPayloadAndTypes("field")
+    @ResponseHandlerPayloadAndTypes(triggerEvent: ["field"], response: ["field"])
+    @RequestResponseHandlerPayloadAndTypes(request: ["field"], response: ["field"])
+    @LinkedEventHandlerPayloadAndTypes(triggerEvent: ["field"], response: ["field"])
+
+See <doc:EventGuide#Integrating-Complex-Payloads> for requirements and a complete example.

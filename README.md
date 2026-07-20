@@ -15,6 +15,7 @@ Use the `EventBus` when asynchronous interactions between services are becoming 
 - Declarative per-handler concurrency: `.parallel`, `.serial`, or `.restart`.
 - Event history that traces multi-step workflows across nested handlers.
 - Built-in timeouts and structured error propagation through async chains.
+- Macros for named tracked-event types and low-boilerplate structured payload construction. See <doc:EventGuide#Integrating-Complex-Payloads>.
 
 ## Installation
 

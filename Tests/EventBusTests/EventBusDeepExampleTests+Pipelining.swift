@@ -56,9 +56,9 @@ private struct ColorSelectionHandler: Sendable {
 }
 
 private enum ColorSelectionEvent {
+    @RequestResponseHandlerTypes
     enum SelectColor: RequestResponsePayloadHandler {
         typealias ResponsePayload = String
-        typealias TrackedResponse = TrackedBusEvent<ObjectIdentifier, ResponsePayload>
     }
 }
 
@@ -93,10 +93,10 @@ private struct FoodSelectionHandler: Sendable {
 }
 
 private enum FoodSelectionEvent {
+    @RequestResponseHandlerTypes
     enum SelectFood: RequestResponsePayloadHandler {
         typealias RequestPayload = String
         typealias ResponsePayload = PipeliningColorAndFood
-        typealias TrackedResponse = TrackedBusEvent<ObjectIdentifier, ResponsePayload>
     }
 }
 
@@ -135,26 +135,25 @@ private struct CritiqueWritingHandler: Sendable {
 }
 
 private enum CritiqueWritingEvent {
+    @RequestResponseHandlerTypes
     enum WriteSingleFoodCritique: RequestResponsePayloadHandler {
         typealias RequestPayload = PipeliningColorAndFood
         typealias ResponsePayload = String
-        typealias TrackedResponse = TrackedBusEvent<ObjectIdentifier, ResponsePayload>
     }
 
+    @RequestResponseHandlerTypes
     enum WriteDoubleFoodCritique: RequestResponsePayloadHandler {
         typealias RequestPayload = PipeliningColorAndTwoFoods
         typealias ResponsePayload = String
-        typealias TrackedResponse = TrackedBusEvent<ObjectIdentifier, ResponsePayload>
     }
 }
 
 // MARK: - Controller handler and event extensions with pipeline functions
 
 enum PipeliningColoredFoodControllerEvent {
+    @RequestResponseHandlerTypes
     enum MakeColoredFood: RequestResponseTrackedBusEventHandler {
         typealias ResponsePayload = PipeliningColoredFoodResult
-        typealias TrackedRequest = TrackedBusEvent<ObjectIdentifier, Void>
-        typealias TrackedResponse = TrackedBusEvent<ObjectIdentifier, ResponsePayload>
     }
 }
 

@@ -29,6 +29,7 @@ enum EventBusDeepExampleTests {
                 init() {}
             }
 
+            @SimpleBusEventTypes
             enum ImpossibleEvent: SimpleBusEventType {
                 // you cannot uncomment the below line or it will get the below compiler error
                 // typealias Payload = NonSendableThing
@@ -40,6 +41,7 @@ enum EventBusDeepExampleTests {
             struct NonSendableHandler {
                 var thing = NonSendableThing()
 
+                @RequestResponseHandlerTypes
                 enum ImpossibleHandlerEvent: RequestResponsePayloadHandler {
                     typealias ResponsePayload = String
                 }
@@ -62,6 +64,7 @@ enum EventBusDeepExampleTests {
                 init() {}
             }
 
+            @SimpleBusEventTypes
             enum PossibleEvent: SimpleBusEventType {
                 typealias Payload = SendableThing
             }
@@ -69,6 +72,7 @@ enum EventBusDeepExampleTests {
             struct SendableHandler {
                 let thing = SendableThing()
 
+                @RequestResponseHandlerTypes
                 enum PossibleHandlerEvent: RequestResponsePayloadHandler {
                     typealias ResponsePayload = String
                 }
@@ -132,10 +136,12 @@ enum EventBusDeepExampleTests {
             // Now the handler can be stateless and still interface with a stateful service
             // ..and can translate between shared data models and the service's local data
             struct ColorHandler: Sendable {
+                @RequestResponseHandlerTypes
                 enum NewColor: RequestResponsePayloadHandler {
                     typealias ResponsePayload = String
                 }
 
+                @RequestResponseHandlerTypes
                 enum ColorByIndex: RequestResponsePayloadHandler {
                     // The "shared I/O data type" the handler uses is a Float here,
                     // ..as opposed to the Int used by the service

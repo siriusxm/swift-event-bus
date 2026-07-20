@@ -2,7 +2,7 @@
 
 ## Overview
 
-Adopting the `EventBus` is a big cost-benefit decision. It reshapes how processes are expressed and how components communicate. And it factors out patterns that recur across complex asynchronous systems. So it is likely overkill for a simple synchronous system, but pays off as an asynchronous system scales.
+Adopting the `EventBus` is a big cost-benefit decision. It reshapes how processes are expressed and how components communicate. And it factors out patterns that recur across complex asynchronous systems. So it is likely overkill for a simple synchronous system, but pays off as an asynchronous system scales. For general software engineering discussion of events see [here](https://martinfowler.com/eaaDev/EventNarrative.html).
 
 ## `EventBus` Features
 

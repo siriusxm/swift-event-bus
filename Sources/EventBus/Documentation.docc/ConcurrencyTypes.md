@@ -17,6 +17,7 @@ A fourth behavior, corresponding to RX's `exhaustMap`, is not currently included
 The default `concurrencyType` for `BusEvent` handler declarations is `.parallel`, so you only need to declare a `concurrencyType` when you want concurrency other than `.parallel`. Declare it with a single line in the handler type:
 
 ```swift
+@RequestResponseHandlerTypes
 enum MyHandler: RequestResponsePayloadHandler {
     typealias RequestPayload = MyData
     static let concurrencyType: EventBus.ConcurrencyType = .serial
@@ -40,6 +41,7 @@ If a handler's service holds mutable state and you need consistent read/write ac
 
 ```swift
 struct AnalyticsService: Sendable {
+    @RequestResponseHandlerTypes
     enum LogPageView: RequestResponsePayloadHandler {
         typealias RequestPayload = String  // a screen name
         static let concurrencyType: EventBus.ConcurrencyType = .parallel
@@ -69,6 +71,7 @@ If a handler's service is fundamentally stateless or its work is independent acr
 
 ```swift
 struct PlaybackQueueService: Sendable {
+    @RequestResponseHandlerTypes
     enum EnqueueTrack: RequestResponsePayloadHandler {
         typealias RequestPayload = TrackID
         static let concurrencyType: EventBus.ConcurrencyType = .serial
@@ -100,6 +103,7 @@ Note that `.restart` is *cooperative*. When the previous invocation is cancelled
 
 ```swift
 struct SearchService: Sendable {
+    @RequestResponseHandlerTypes
     enum Search: RequestResponsePayloadHandler {
         typealias RequestPayload = String
         typealias ResponsePayload = [SearchResult]

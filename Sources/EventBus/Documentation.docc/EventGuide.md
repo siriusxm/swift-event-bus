@@ -14,19 +14,28 @@ The `EventBus` also supports two types of handler functions you can register to 
 
 The primitives are designed to support additional event models as requirements evolve.
 
+For general software engineering discussion of events see [here](https://martinfowler.com/eaaDev/EventNarrative.html).
+
 ## Event Use Case Reference
 
-Note that any event can be defined with a `Payload`, and payload types can be arbitrarily complex as long as they remain `Sendable`. `Payload`s are `Void` by default, and examples here are simplified by omitting explicit `Payload`s, except where demonstrating `Payload` integration.
+Any event can be defined with a `Payload`, and payload types can be arbitrarily complex as long as they remain `Sendable`. `Payload`s are `Void` by default, and examples here are simplified by omitting explicit `Payload`s, except where demonstrating `Payload` integration.
 
 ### Originating or Triggering Events
 
 It is a common requirement to have actions in your system triggered by external or independent systems that originate events. Examples are clocks and timers, sensors, and specific iOS systems such as `UIApplication`, `NotificationCenter`, `AVPlayer`, `CoreMotion`, and `StoreKit`. If you want to model these events as independent triggers decoupled from the context-specific APIs they invoke in your application, use `SimpleBusEventType`. `SimpleBusEventType` declares a reusable event that is not tied to a specific handler. This gives your system flexibility to have zero, one, or many internal observers independently reacting to these events.
 
 ```swift
+@SimpleBusEventTypes
 enum LunchTime: SimpleBusEventType {}
+
+@SimpleBusEventTypes
 enum AVPlayerDidPlayToEndTime: SimpleBusEventType {}
+
+@SimpleBusEventTypes
 enum NotificationCenterAppBackgrounded: SimpleBusEventType {}
 ```
+
+The `@SimpleBusEventTypes`, `@ResponseHandlerTypes`, `@RequestResponseHandlerTypes`, and `@LinkedEventHandlerTypes` macros used in these examples are optional, but recommended. They help work around a Swift language limitation that comes up when you declare extensions on events for handler subroutines. See <doc:Pipelining#Enabling-BusEvent-Extensions> for details.
 
 It is a best practice to have one object that owns a single strong reference to the `EventBus`. When events originate from within that object, you can use the `EventBus` reference directly to send these events. For examples of how to tie external systems or sub-components back to the `EventBus` so they can send events without retaining a strong `EventBus` reference, see <doc:FactoringComplexSystems#Weak-EventBus-References>.
 
@@ -41,10 +50,12 @@ For the system to respond to external triggering events, the `EventBus` provides
 `ResponsePayloadHandler` responds to a triggering event and automatically unwraps the triggering event's payload into the handler function's parameter, then wraps the handler function's result into a response event and automatically sends it. Use this for simple endpoint handlers that call service functions, but do not trigger nested event flows.
 
 ```swift
+@SimpleBusEventTypes
 enum LunchTime: SimpleBusEventType {
     typealias Payload = Date
 }
 
+@ResponseHandlerTypes
 enum EatLunch: ResponsePayloadHandler {
     typealias TriggerEvent = LunchTime
     typealias ResponsePayload = String
@@ -64,10 +75,12 @@ For an example using a `Void` payload, see ``EventBusTests/EventBusExampleTests/
 `ResponseTrackedBusEventHandler` is the same as `ResponsePayloadHandler` except it passes the triggering event directly to the handler function as a `TrackedBusEvent`, allowing the handler to call back into the `EventBus` API and send nested events and manipulate their results into event history without retaining a strong `EventBus` reference.
 
 ```swift
+@SimpleBusEventTypes
 enum LunchTime: SimpleBusEventType {
     typealias Payload = LunchPreferences
 }
 
+@ResponseHandlerTypes
 enum OrderAndEatLunch: ResponseTrackedBusEventHandler {
     typealias TriggerEvent = LunchTime
     typealias ResponsePayload = LunchCritique
@@ -96,6 +109,7 @@ Another common use case when modeling systems is to have internal components tha
 
 ```swift
 struct ColoredFoodService: Sendable {
+    @RequestResponseHandlerTypes
     enum ColoredFoodDelivery: RequestResponsePayloadHandler {
         typealias ResponsePayload = String
     }
@@ -119,6 +133,7 @@ The following example uses `RequestResponseTrackedBusEventHandler` for the outer
 
 ```swift
 struct LunchSystem: Sendable {
+    @RequestResponseHandlerTypes
     enum EatLunchNow: RequestResponseTrackedBusEventHandler {
         typealias ResponsePayload = String
     }
@@ -187,15 +202,18 @@ struct DinnerCustomerData {
     let dinnerAttire: DinnerAttire
 }
 
+@RequestResponseHandlerTypes
 enum CustomerBreakfast: RequestResponsePayloadHandler {
     typealias ResponsePayload = CommonCustomerData
 }
 
+@ResponseHandlerTypes
 enum CustomerLunch: ResponsePayloadHandler {
     typealias TriggerEvent = LunchTime
     typealias ResponsePayload = CommonCustomerData
 }
 
+@RequestResponseHandlerTypes
 enum CustomerDinner: RequestResponsePayloadHandler {
     typealias ResponsePayload = DinnerCustomerData
 }
@@ -206,20 +224,24 @@ Sometimes you'll model a component that handles different incoming events but pr
 
 ```swift
 
+@SimpleBusEventTypes
 enum ReportResponse: SimpleBusEventType {
     typealias Payload = ReportPayload
 }
 
+@LinkedEventHandlerTypes
 enum ReportCustomerBreakfast: LinkedEventPayloadHandler {
     typealias TriggerEvent = CustomerBreakfast.ResponseEvent
     typealias ResponseEvent = ReportResponse
 }
 
+@LinkedEventHandlerTypes
 enum ReportCustomerLunch: LinkedEventPayloadHandler {
     typealias TriggerEvent = CustomerLunch.ResponseEvent
     typealias ResponseEvent = ReportResponse
 }
 
+@LinkedEventHandlerTypes
 enum ReportCustomerDinner: LinkedEventPayloadHandler {
     typealias TriggerEvent = CustomerDinner.ResponseEvent
     typealias ResponseEvent = ReportResponse
@@ -228,12 +250,93 @@ enum ReportCustomerDinner: LinkedEventPayloadHandler {
 
 There is also a `LinkedTrackedBusEventHandler` if your component has more complex nested event processes rather than simple, single functions you would implement with payload handlers.
 
+### Integrating Complex Payloads
+
+When payloads are simple single values, the `EventBus` protocol functions incorporate them automatically, so they integrate seamlessly. But when a payload is a multi-field struct, or any object with an init function that takes multiple parameters, the default `EventBus` protocol integration is to pass an instance of the payload. This adds a point of friction when creating and sending events where you have to look up the payload type and embed its initializer in the call. If you have an event with a complex payload type that you use frequently you can reduce boilerplate by creating a version of the protocol function that takes the parameters of the initializer directly and calls the payload initializer internally.
+
+Protocol functions involved are event initializers and send/sendAndWait variations:
+
+- `event`
+- `request`
+- `response`
+- `send`
+- `sendAndWaitForResponse`
+
+First apply `@BusEventPayloadInit` to the payload initializer. Then apply the matching `*PayloadAndTypes` macro to the event or handler. String names must match the initializer's external parameter labels and declaration order. For an unlabeled parameter, use its local name. All listed arguments remain required by generated event and handler conveniences, even when the payload initializer supplies a default value. This is required because swift's macro generation technology is limited and doesn't allow us to introspect the payload type's initializer directly from the event declarations where it's used.
+
+`@BusEventPayloadInit` supports non-async, non-throwing, non-failable initializers without variadic parameters. It supports unlabeled parameters, separate external and local names, and escaped Swift keywords.
+
+```swift
+struct DinnerCustomerData {
+    let name: String
+    let phoneNumber: String
+    let dinnerAttire: DinnerAttire
+
+
+    @BusEventPayloadInit
+    init(name: String, phoneNumber: String, dinnerAttire: DinnerAttire) {
+        self.name = name
+        self.phoneNumber = phoneNumber
+        self.dinnerAttire = dinnerAttire
+    }
+}
+
+@RequestResponseHandlerPayloadAndTypes(request: ["name", "phoneNumber", "dinnerAttire"])
+enum CustomerDinner: RequestResponsePayloadHandler {
+    typealias RequestPayload = DinnerCustomerData
+    typealias ResponsePayload = String
+}
+```
+
+The caller can now send the request using the init arguments directly in the `EventBus` functions instead of explicitly calling the `Payload` initializer:
+
+```swift
+let response = try await CustomerDinner.sendAndWaitForResponse(
+    inputEvent: inputEvent,
+    name: "Sam",
+    phoneNumber: "555-0100",
+    dinnerAttire: .formal
+)
+```
+
+The macros are recommended, but not essential to this idea. If you don't want to use macros, but still want the embedded arguments, the following example shows how you can declare the payload integration manually:
+
+```swift
+struct DinnerCustomerData {
+    let name: String
+    let phoneNumber: String
+    let dinnerAttire: DinnerAttire
+}
+
+enum CustomerDinner: RequestResponsePayloadHandler {
+    typealias RequestPayload = DinnerCustomerData
+    typealias ResponsePayload = String
+
+    static func sendAndWaitForResponse(
+        inputEvent: AnyTrackedBusEventType,
+        name: String,
+        phoneNumber: String,
+        dinnerAttire: DinnerAttire
+    ) async throws -> TrackedResponse? {
+        try await sendAndWaitForResponse(
+            inputEvent: inputEvent,
+            payload: RequestPayload(
+                name: name,
+                phoneNumber: phoneNumber,
+                dinnerAttire: dinnerAttire
+            )
+        )
+    }
+}
+```
+
 ### Decoupled Internal Observers
 
-There are many options for expressing your processes with event flows. One option to explore is whether to have your controller/orchestrator handler functions explicitly send events to all involved components, or whether to have some components observe the process events and react without the controller/orchestrator being aware of the interaction. Each approach has its merits and drawbacks. If you decide an interaction is better modeled with an observer, use the `ResponseHandler` protocols if the observer's processing of each event should be modeled as unique, or `LinkedEventPayloadHandler` to reuse the observer's event responses (see above).
+There are many options for expressing your processes with event flows. One option to explore is whether to have your controller/orchestrator handler functions explicitly send events to all involved components, or whether to have some components observe the process events and react without the controller/orchestrator being aware of the interaction. Each approach has its merits and drawbacks. For general discussion, see [here](https://martinfowler.com/eaaDev/EventCollaboration.html). If you decide an interaction is better modeled with an observer, use the `ResponseHandler` protocols if the observer's processing of each event should be modeled as unique, or `LinkedEventPayloadHandler` to reuse the observer's event responses (see [above](#reusing-response-payloads-and-events)).
 
 ```swift
 struct SamsMotherHandler: Sendable {
+    @ResponseHandlerTypes
     enum CheckOnSamsLunch: ResponsePayloadHandler {
         typealias TriggerEvent = SamLunchHandler.EatLunch.ResponseEvent
         typealias ResponsePayload = String
@@ -270,7 +373,6 @@ let observerResult = try await LunchObserverTestLink.sendAndWaitForResponse(even
 For the complete example, see: ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample6()``
 
 For more discussion and examples, see <doc:Pipelining#Main-Events-And-Side-Effects>.
-
 
 ## Event Internals
 

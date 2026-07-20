@@ -34,8 +34,10 @@ extension EventBusDeepExampleTests {
         @Test
         func weakEventBusTimerExample() async throws {
             struct PeriodicColorHandler: Sendable {
+                @RequestResponseHandlerTypes
                 enum StartPeriodicColors: RequestResponseTrackedBusEventHandler {}
 
+                @RequestResponseHandlerTypes
                 enum GetPeriodicColor: RequestResponsePayloadHandler {
                     typealias ResponsePayload = String
                 }
@@ -108,8 +110,10 @@ extension EventBusDeepExampleTests {
         @Test
         func weakEventBusServiceCallbackExample() async throws {
             struct LegacyColorHandler: Sendable {
+                @RequestResponseHandlerTypes
                 enum InstallCallbacks: RequestResponseTrackedBusEventHandler {}
 
+                @RequestResponseHandlerTypes
                 enum ColorChanged: RequestResponsePayloadHandler {
                     typealias ResponsePayload = String
                 }
