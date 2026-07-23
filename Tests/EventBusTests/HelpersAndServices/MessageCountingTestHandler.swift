@@ -16,11 +16,13 @@
 
 @testable import EventBus
 
+@RequestResponseHandlerTypes
 enum CountingTestMatchingHandler: RequestResponsePayloadHandler {
     typealias ResponsePayload = ObjectIdentifier
     static let serviceName = "CountingTestMatchingService"
 }
 
+@RequestResponseHandlerTypes
 enum CountingTestNonMatchingHandler: RequestResponsePayloadHandler {
     typealias ResponsePayload = ObjectIdentifier
     static let serviceName = "CountingTestNonMatchingService"

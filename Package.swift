@@ -15,7 +15,16 @@
 //  limitations under the License.
 //
 
+import CompilerPluginSupport
 import PackageDescription
+
+let swiftSyntaxVersion: String = {
+    #if swift(>=6.2)
+    return "602.0.0"
+    #else
+    return "601.0.0"
+    #endif
+}()
 
 let package = Package(
     name: "EventBus",
@@ -36,15 +45,25 @@ let package = Package(
         ),
     ],
     dependencies: [
+        .package(url: "https://github.com/swiftlang/swift-syntax.git", from: Version(swiftSyntaxVersion)!),
         .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.3.2"),
     ],
     targets: [
         .target(
             name: "EventBus",
             dependencies: [
+                "EventBusMacros",
                 .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
             ],
             exclude: ["Documentation.docc"]
+        ),
+        .macro(
+            name: "EventBusMacros",
+            dependencies: [
+                .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+            ],
+            path: "Sources/EventBusMacros/"
         ),
         .target(
             name: "EventBusTestSupport",
@@ -58,6 +77,13 @@ let package = Package(
                 "EventBus",
                 "EventBusTestSupport",
                 .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
+            ]
+        ),
+        .testTarget(
+            name: "EventBusMacrosTests",
+            dependencies: [
+                "EventBusMacros",
+                .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
             ]
         ),
     ]

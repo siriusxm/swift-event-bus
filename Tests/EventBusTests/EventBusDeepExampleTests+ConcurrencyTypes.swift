@@ -46,6 +46,7 @@ extension EventBusDeepExampleTests {
                 }
             }
 
+            @RequestResponseHandlerTypes
             enum EnqueueTrack: RequestResponsePayloadHandler {
                 typealias RequestPayload = Int
                 // .parallel is the default; the actor below provides serialization.
@@ -97,6 +98,7 @@ extension EventBusDeepExampleTests {
                 }
             }
 
+            @RequestResponseHandlerTypes
             enum EnqueueTrack: RequestResponsePayloadHandler {
                 typealias RequestPayload = Int
                 static let concurrencyType: EventBus.ConcurrencyType = .serial
@@ -135,12 +137,14 @@ extension EventBusDeepExampleTests {
                 }
             }
 
+            @RequestResponseHandlerTypes
             enum NormalizeTrack: RequestResponsePayloadHandler {
                 typealias RequestPayload = Int
                 typealias ResponsePayload = Int
                 // .parallel is the default; the serial outer handler controls access.
             }
 
+            @RequestResponseHandlerTypes
             enum EnqueueTrack: RequestResponseTrackedBusEventHandler {
                 typealias RequestPayload = Int
                 typealias ResponsePayload = Int
@@ -208,6 +212,7 @@ extension EventBusDeepExampleTests {
                 }
             }
 
+            @RequestResponseHandlerTypes
             enum Search: RequestResponsePayloadHandler {
                 typealias RequestPayload = String
                 typealias ResponsePayload = [String]
@@ -240,6 +245,7 @@ extension EventBusDeepExampleTests {
         // EventBusReadMeExampleTests.
         @Test
         func parallelHandlersExecuteConcurrently() async throws {
+            @RequestResponseHandlerTypes
             enum LogPageView: RequestResponsePayloadHandler {
                 typealias RequestPayload = String
                 static let concurrencyType: EventBus.ConcurrencyType = .parallel

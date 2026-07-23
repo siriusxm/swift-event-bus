@@ -47,6 +47,7 @@ extension EventBusDeepExampleTests {
             }
 
             struct ColorHandler: Sendable {
+                @RequestResponseHandlerTypes
                 enum NewColor: RequestResponsePayloadHandler {
                     typealias ResponsePayload = String
                 }
@@ -117,6 +118,7 @@ extension EventBusDeepExampleTests {
             }
 
             struct ColorHandler: Sendable {
+                @RequestResponseHandlerTypes
                 enum NewColor: RequestResponsePayloadHandler {
                     typealias ResponsePayload = String
                 }
@@ -137,6 +139,7 @@ extension EventBusDeepExampleTests {
             }
 
             struct FavoriteColorController: Sendable {
+                @RequestResponseHandlerTypes
                 enum FavoriteColor: RequestResponseTrackedBusEventHandler {
                     typealias ResponsePayload = String
                 }

@@ -84,6 +84,7 @@ extension EventBusDeepExampleTests {
 
         @Test
         func fireAndForgetHandlerDeallocationExample() async {
+            @RequestResponseHandlerTypes
             enum FireAndForgetColor: RequestResponsePayloadHandler {
                 typealias ResponsePayload = String
             }
@@ -121,6 +122,7 @@ extension EventBusDeepExampleTests {
 
         @Test
         func throwingServiceHandlerDeallocationExample() async throws {
+            @RequestResponseHandlerTypes
             enum ThrowingColor: RequestResponsePayloadHandler {
                 typealias ResponsePayload = String
             }
@@ -169,6 +171,7 @@ extension EventBusDeepExampleTests {
 
         @Test
         func restartHandlerDeallocationExample() async {
+            @RequestResponseHandlerTypes
             enum RestartColor: RequestResponseTrackedBusEventHandler {
                 typealias ResponsePayload = String
 
@@ -209,6 +212,7 @@ extension EventBusDeepExampleTests {
 
         @Test
         func parallelHandlersDeallocateAfterInFlightHandlersFinish() async {
+            @RequestResponseHandlerTypes
             enum ParallelColor: RequestResponsePayloadHandler {
                 typealias RequestPayload = String
                 typealias ResponsePayload = String
