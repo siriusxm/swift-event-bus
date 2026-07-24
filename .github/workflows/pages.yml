@@ -20,30 +20,40 @@ jobs:
     name: Build website and documentation
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Select Xcode (Swift 6.2)
         uses: maxim-lobanov/setup-xcode@v1
         with:
           xcode-version: '26.0'
       - name: Assemble website
         run: |
-          mkdir -p .build/pages
-          cp -R Documentation/Website/. .build/pages/
+          mkdir -p pages-output
+          cp -R Documentation/Website/. pages-output/
       - name: Build DocC documentation
         run: |
           swift package \
-            --allow-writing-to-directory .build/pages/docs \
+            --allow-writing-to-directory "$RUNNER_TEMP/eventbus-docc" \
             generate-documentation \
             --target EventBus \
             --disable-indexing \
             --transform-for-static-hosting \
             --hosting-base-path swift-event-bus/docs \
-            --output-path .build/pages/docs
+            --output-path "$RUNNER_TEMP/eventbus-docc"
+          mkdir -p pages-output/docs
+          cp -R "$RUNNER_TEMP/eventbus-docc/." pages-output/docs/
+      - name: Validate Pages artifact
+        run: |
+          test -f pages-output/index.html
+          test -f pages-output/docs/documentation/eventbus/index.html
+          test -d pages-output/docs/js
+          test -d pages-output/docs/css
+          test -n "$(find pages-output/docs/js -type f -name '*.js' -print -quit)"
+          test -n "$(find pages-output/docs/css -type f -name '*.css' -print -quit)"
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
-          path: .build/pages
+          path: pages-output
 
   deploy:
     name: Deploy GitHub Pages
@@ -56,4 +66,4 @@ jobs:
     steps:
       - name: Deploy
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
