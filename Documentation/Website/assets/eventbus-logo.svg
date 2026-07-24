@@ -13,6 +13,8 @@
     <path fill="#08080a" d="M11 88h103v6H11Z"/>
     <path fill="#ffffff" stroke="#08080a" stroke-width="2" d="M108 82h14v10h-14Z"/>
   </g>
+  <circle cx="32" cy="98" r="16" fill="none" stroke="#8585ff" stroke-width="2"/>
+  <circle cx="92" cy="98" r="16" fill="none" stroke="#8585ff" stroke-width="2"/>
   <circle cx="32" cy="98" r="14" fill="url(#windows)" stroke="#08080a" stroke-width="2"/>
   <circle cx="92" cy="98" r="14" fill="url(#windows)" stroke="#08080a" stroke-width="2"/>
 </svg>

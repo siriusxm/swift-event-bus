@@ -6,7 +6,7 @@
     <meta name="description" content="EventBus is an open-source, strongly typed event channel for coordinating asynchronous Swift services without coupling.">
     <meta name="theme-color" content="#08111f">
     <title>EventBus — Async Swift services, coordinated</title>
-    <link rel="icon" href="assets/eventbus-logo.svg" type="image/svg+xml">
+    <link rel="icon" href="assets/eventbus-favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -111,17 +111,14 @@
                         </div>
 
                         <div class="event-node receiver receiver-one">
-                            <span class="receiver-mark">01</span>
                             <strong>EatLunch</strong>
                         </div>
 
                         <div class="event-node receiver receiver-two">
-                            <span class="receiver-mark">02</span>
                             <strong>GymWorkout</strong>
                         </div>
 
                         <div class="event-node receiver receiver-three">
-                            <span class="receiver-mark">03</span>
                             <strong>GreetingHandler</strong>
                         </div>
                     </div>
@@ -139,19 +136,19 @@
                 <div class="section-heading centered-heading">
                     <span class="kicker why-kicker">WHY EventBus</span>
                     <h2>Loose coupling without losing the plot</h2>
-                    <p>Move beyond webs of direct calls and publishers. EventBus gives service coordination a consistent vocabulary and a maintainable future.</p>
+                    <p>Move beyond tangles of direct calls and Combine publishers. EventBus gives service coordination a consistent vocabulary and a maintainable future.</p>
                 </div>
 
                 <div class="feature-grid">
                     <article class="feature-card">
                         <span class="feature-icon" aria-hidden="true"><img src="assets/eventbus-logo.svg" alt=""></span>
                         <h3>Strongly typed events</h3>
-                        <p>Events are Swift types. Routing mismatches detected at compile-time.</p>
+                        <p>Events are Swift types. Routing mismatches are detected at compile-time.</p>
                     </article>
                     <article class="feature-card">
                         <span class="feature-icon" aria-hidden="true"><img src="assets/eventbus-logo.svg" alt=""></span>
                         <h3>Concurrency by declaration</h3>
-                        <p>Choose <code>.parallel</code>, <code>.serial</code>, or <code>.restart</code> for each handler instead of cut-and-paste task control.</p>
+                        <p>Choose <code>.parallel</code>, <code>.serial</code>, or <code>.restart</code> for each handler instead of cut-and-paste concurrency code.</p>
                     </article>
                     <article class="feature-card">
                         <span class="feature-icon" aria-hidden="true"><img src="assets/eventbus-logo.svg" alt=""></span>
@@ -161,7 +158,7 @@
                     <article class="feature-card">
                         <span class="feature-icon" aria-hidden="true"><img src="assets/eventbus-logo.svg" alt=""></span>
                         <h3>Designed for testing</h3>
-                        <p>Keep services independent from the bus and test event-driven workflows with dedicated support utilities.</p>
+                        <p>Keep services decoupled and test event-driven workflows with dedicated support utilities.</p>
                     </article>
                     <article class="feature-card">
                         <span class="feature-icon" aria-hidden="true"><img src="assets/eventbus-logo.svg" alt=""></span>
@@ -204,11 +201,6 @@
                             <h3>Documentation</h3>
                             <p>Conceptual guides, concurrency patterns, event recipes, and complete API reference.</p>
                         </div>
-                        <b aria-hidden="true">↗</b>
-                    </a>
-                    <a class="resource-card" href="https://github.com/siriusxm/swift-event-bus#readme">
-                        <img class="resource-logo" src="assets/eventbus-logo.svg" alt="">
-                        <div><h3>README</h3><p>Understand the core model and walk through the first event and handler.</p></div>
                         <b aria-hidden="true">↗</b>
                     </a>
                     <a class="resource-card" href="https://github.com/siriusxm/swift-event-bus/releases">

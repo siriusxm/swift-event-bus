@@ -6,6 +6,15 @@ Once a system has multiple services that coordinate asynchronous tasks, coding e
 
 Use the `EventBus` when asynchronous interactions between services are becoming hard to follow or test. Keep direct calls when a system is small, synchronous, and already easy to maintain.
 
+## Project links
+
+- [EventBus website](https://siriusxm.github.io/swift-event-bus/)
+- [Documentation and API reference](https://siriusxm.github.io/swift-event-bus/docs/documentation/eventbus/)
+- [Releases](https://github.com/siriusxm/swift-event-bus/releases)
+- [Discussions](https://github.com/siriusxm/swift-event-bus/discussions)
+- [Report a bug](https://github.com/siriusxm/swift-event-bus/issues/new?template=bug.md)
+- [Request a feature](https://github.com/siriusxm/swift-event-bus/issues/new?template=feature.md)
+
 ## Features
 
 - Strongly typed events declared as Swift protocols. Types act as routing IDs, so mismatches fail at compile time.
