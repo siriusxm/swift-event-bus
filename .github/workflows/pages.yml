@@ -1,0 +1,59 @@
+name: GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: Build website and documentation
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode (Swift 6.2)
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26.0'
+      - name: Assemble website
+        run: |
+          mkdir -p .build/pages
+          cp -R Documentation/Website/. .build/pages/
+      - name: Build DocC documentation
+        run: |
+          swift package \
+            --allow-writing-to-directory .build/pages/docs \
+            generate-documentation \
+            --target EventBus \
+            --disable-indexing \
+            --transform-for-static-hosting \
+            --hosting-base-path swift-event-bus/docs \
+            --output-path .build/pages/docs
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .build/pages
+
+  deploy:
+    name: Deploy GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

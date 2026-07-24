@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="EventBus is an open-source, strongly typed event channel for coordinating asynchronous Swift services without coupling.">
+    <meta name="theme-color" content="#08111f">
+    <title>EventBus — Async Swift services, coordinated</title>
+    <link rel="icon" href="assets/eventbus-favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <header class="site-header">
+        <div class="shell header-inner">
+            <a class="brand" href="#top" aria-label="SiriusXM EventBus home">
+                <span class="sxm-lockup" aria-hidden="true">
+                    <span class="sxm-cap"></span>
+                    <span class="sxm-lockup-row">
+                        <img class="sxm-wordmark" src="assets/siriusxm-wordmark-blue.png" alt="">
+                        <span class="sxm-subbrand">EventBus</span>
+                    </span>
+                </span>
+                <img class="lockup-bus" src="assets/eventbus-logo.svg" width="44" height="44" alt="">
+            </a>
+
+            <nav class="site-nav" aria-label="Primary navigation">
+                <a href="#why">Why EventBus</a>
+                <a href="#get-started">Get started</a>
+                <a href="#community">Community</a>
+            </nav>
+
+            <a class="header-github" href="https://github.com/siriusxm/swift-event-bus">
+                View on GitHub
+                <span aria-hidden="true">↗</span>
+            </a>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <section class="hero" id="top">
+            <div class="hero-glow hero-glow-one" aria-hidden="true"></div>
+            <div class="hero-glow hero-glow-two" aria-hidden="true"></div>
+
+            <div class="shell hero-grid">
+                <div class="hero-copy">
+                    <div class="eyebrow-row">
+                        <span class="eyebrow">Open-source Swift middleware</span>
+                    </div>
+                    <h1>Async services.<br>Clearly coordinated.</h1>
+                    <p class="hero-lede">
+                        A shared, strongly typed event channel for Swift systems. Decouple services with simpler concurrency, cancellation, tracing, and testing.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="button button-primary" href="#get-started">Get started <span aria-hidden="true">→</span></a>
+                    </div>
+                    <ul class="hero-facts" aria-label="Project highlights">
+                        <li><span>✓</span> Swift 6.2</li>
+                        <li><span>✓</span> Structured concurrency</li>
+                        <li><span>✓</span> Apache 2.0</li>
+                    </ul>
+                </div>
+
+                <div class="flow-card" aria-label="Diagram showing a LunchTime broadcast reaching two handlers and a MakeGreeting request returning a response">
+                    <div class="flow-card-header">
+                        <div>
+                            <span class="window-dot dot-red"></span>
+                            <span class="window-dot dot-yellow"></span>
+                            <span class="window-dot dot-green"></span>
+                        </div>
+                        <span>Event flow</span>
+                    </div>
+
+                    <div class="event-map">
+                        <svg class="event-connectors" viewBox="0 0 560 390" aria-hidden="true">
+                            <defs>
+                                <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#0000eb"/>
+                                </marker>
+                                <marker id="arrow-white" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#ffffff"/>
+                                </marker>
+                            </defs>
+                            <path class="broadcast-path" d="M170 105 C205 105 210 158 234 176" marker-end="url(#arrow-blue)"/>
+                            <path class="request-path" d="M170 286 C205 286 210 225 234 207" marker-end="url(#arrow-blue)"/>
+                            <path class="broadcast-path" d="M338 176 C365 176 367 76 390 76" marker-end="url(#arrow-blue)"/>
+                            <path class="broadcast-path" d="M338 184 C365 184 368 176 390 176" marker-end="url(#arrow-blue)"/>
+                            <path class="request-path" d="M338 207 C365 225 368 304 390 304" marker-end="url(#arrow-blue)"/>
+                            <path class="response-path" d="M390 320 C365 320 360 240 338 221"/>
+                            <path class="response-path" d="M234 221 C210 240 205 301 170 301" marker-end="url(#arrow-white)"/>
+                            <text class="response-label" x="312" y="274">
+                                <tspan x="312">Greeting</tspan>
+                                <tspan x="312" dy="11">response</tspan>
+                            </text>
+                        </svg>
+
+                        <div class="event-node event-input broadcast-input">
+                            <span class="event-kind">Broadcast</span>
+                            <strong>LunchTime</strong>
+                        </div>
+
+                        <div class="event-node event-input request-input">
+                            <span class="event-kind">Request</span>
+                            <strong>MakeGreeting</strong>
+                        </div>
+
+                        <div class="eventbus-hub">
+                            <img src="assets/eventbus-logo.svg" width="43" height="43" alt="">
+                            <strong>EventBus</strong>
+                        </div>
+
+                        <div class="event-node receiver receiver-one">
+                            <strong>EatLunch</strong>
+                        </div>
+
+                        <div class="event-node receiver receiver-two">
+                            <strong>GymWorkout</strong>
+                        </div>
+
+                        <div class="event-node receiver receiver-three">
+                            <strong>GreetingHandler</strong>
+                        </div>
+                    </div>
+
+                    <div class="event-legend">
+                        <span><i class="legend-solid"></i> Event or request</span>
+                        <span><i class="legend-dashed"></i> Response</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="why">
+            <div class="shell">
+                <div class="section-heading centered-heading">
+                    <span class="kicker why-kicker">WHY USE EVENTBUS?</span>
+                    <h2>Loose coupling without losing the plot</h2>
+                    <p>Move beyond tangles of direct calls and Combine publishers.</p>
+                    <p>EventBus gives service coordination a consistent vocabulary and a maintainable future.</p>
+                </div>
+
+                <div class="feature-grid">
+                    <article class="feature-card">
+                        <span class="feature-icon" aria-hidden="true"><img src="assets/eventbus-logo.svg" alt=""></span>
+                        <h3>Strongly typed events</h3>
+                        <p>Events are Swift types. Routing mismatches are detected at compile-time.</p>
+                    </article>
+                    <article class="feature-card">
+                        <span class="feature-icon" aria-hidden="true"><img src="assets/eventbus-logo.svg" alt=""></span>
+                        <h3>Concurrency by declaration</h3>
+                        <p>Choose <code>.parallel</code>, <code>.serial</code>, or <code>.restart</code> for each handler instead of cut-and-paste concurrency code.</p>
+                    </article>
+                    <article class="feature-card">
+                        <span class="feature-icon" aria-hidden="true"><img src="assets/eventbus-logo.svg" alt=""></span>
+                        <h3>Workflows you can trace</h3>
+                        <p>Follow nested event history across multi-step async processes, including timeouts and structured errors.</p>
+                    </article>
+                    <article class="feature-card">
+                        <span class="feature-icon" aria-hidden="true"><img src="assets/eventbus-logo.svg" alt=""></span>
+                        <h3>Designed for testing</h3>
+                        <p>Keep services decoupled and test event-driven workflows with dedicated support utilities.</p>
+                    </article>
+                    <article class="feature-card">
+                        <span class="feature-icon" aria-hidden="true"><img src="assets/eventbus-logo.svg" alt=""></span>
+                        <h3>Broadcast or request-response</h3>
+                        <p>Fan events out to listeners or await a typed response inline with <code>async</code> <code>sendAndWaitForResponse</code> functions.</p>
+                    </article>
+                    <article class="feature-card">
+                        <span class="feature-icon" aria-hidden="true"><img src="assets/eventbus-logo.svg" alt=""></span>
+                        <h3>Less integration boilerplate</h3>
+                        <p>Protocols, extensions, and macros keep event declarations compact and reusable as systems grow.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        <section class="section get-started-section" id="get-started">
+            <div class="shell">
+                <div class="section-heading centered-heading compact-heading">
+                    <span class="kicker">Get started</span>
+                    <p>Add EventBus to your project with Swift Package Manager.</p>
+                </div>
+
+                <div class="install-card">
+                    <div class="install-card-title">
+                        <span>Package.swift</span>
+                        <span class="planned-label">Version 0.9.0</span>
+                    </div>
+                    <pre><code><span class="code-keyword">dependencies</span>: [
+    .package(
+        url: <span class="code-string">"https://github.com/siriusxm/swift-event-bus.git"</span>,
+        from: <span class="code-string">"0.9.0"</span>
+    )
+]</code></pre>
+                </div>
+
+                <div class="resource-row" id="documentation">
+                    <a class="resource-card resource-featured" href="docs/documentation/eventbus/">
+                        <img class="resource-logo" src="assets/eventbus-logo.svg" alt="">
+                        <div>
+                            <h3>Documentation</h3>
+                            <p>Conceptual guides, concurrency patterns, event recipes, and complete API reference.</p>
+                        </div>
+                        <b aria-hidden="true">↗</b>
+                    </a>
+                    <a class="resource-card" href="https://github.com/siriusxm/swift-event-bus/releases">
+                        <img class="resource-logo" src="assets/eventbus-logo.svg" alt="">
+                        <div><h3>Releases</h3><p>Follow release notes, project milestones, and compatibility updates.</p></div>
+                        <b aria-hidden="true">↗</b>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section community-section" id="community">
+            <div class="shell community-shell">
+                <div class="community-copy">
+                    <span class="kicker">JOIN THE COMMUNITY</span>
+                    <h2>Help shape EventBus</h2>
+                    <p>Ask questions, share how you are coordinating Swift services, report rough edges, or propose the next big feature.</p>
+                </div>
+
+                <div class="community-links">
+                    <a href="https://github.com/siriusxm/swift-event-bus/discussions">
+                        <span class="community-icon"><img src="assets/eventbus-logo.svg" alt=""></span>
+                        <span><strong>Join a discussion</strong><small>Questions, ideas, and patterns</small></span>
+                        <b aria-hidden="true">↗</b>
+                    </a>
+                    <a href="https://github.com/siriusxm/swift-event-bus/issues/new?template=bug.md">
+                        <span class="community-icon"><img src="assets/eventbus-logo.svg" alt=""></span>
+                        <span><strong>Report a bug</strong><small>Help us reproduce a problem</small></span>
+                        <b aria-hidden="true">↗</b>
+                    </a>
+                    <a href="https://github.com/siriusxm/swift-event-bus/issues/new?template=feature.md">
+                        <span class="community-icon"><img src="assets/eventbus-logo.svg" alt=""></span>
+                        <span><strong>Request a feature</strong><small>Propose an additive capability</small></span>
+                        <b aria-hidden="true">↗</b>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="shell footer-inner">
+            <a class="brand footer-brand" href="#top" aria-label="SiriusXM EventBus home">
+                <span class="sxm-lockup" aria-hidden="true">
+                    <span class="sxm-cap"></span>
+                    <span class="sxm-lockup-row">
+                        <img class="sxm-wordmark" src="assets/siriusxm-wordmark-blue.png" alt="">
+                        <span class="sxm-subbrand">EventBus</span>
+                    </span>
+                </span>
+                <img class="lockup-bus" src="assets/eventbus-logo.svg" width="40" height="40" alt="">
+            </a>
+            <p>Typed middleware for asynchronous Swift systems.</p>
+            <nav aria-label="Footer navigation">
+                <a href="docs/documentation/eventbus/">Documentation</a>
+                <a href="https://github.com/siriusxm/swift-event-bus#readme">README</a>
+                <a href="https://github.com/siriusxm/swift-event-bus/releases">Releases</a>
+                <a href="https://github.com/siriusxm/swift-event-bus/issues/new?template=bug.md">Report a bug</a>
+                <a href="https://github.com/siriusxm/swift-event-bus/issues/new?template=feature.md">Request a feature</a>
+                <a href="https://github.com/siriusxm/swift-event-bus">GitHub</a>
+                <a href="https://github.com/siriusxm/swift-event-bus/blob/main/LICENSE">License</a>
+                <a href="https://github.com/siriusxm/swift-event-bus/discussions">Discussions</a>
+            </nav>
+        </div>
+    </footer>
+</body>
+</html>

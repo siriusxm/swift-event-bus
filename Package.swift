@@ -47,6 +47,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/swiftlang/swift-syntax.git", from: Version(swiftSyntaxVersion)!),
         .package(url: "https://github.com/pointfreeco/swift-concurrency-extras", from: "1.3.2"),
+        .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.4.5"),
     ],
     targets: [
         .target(
@@ -54,8 +55,7 @@ let package = Package(
             dependencies: [
                 "EventBusMacros",
                 .product(name: "ConcurrencyExtras", package: "swift-concurrency-extras"),
-            ],
-            exclude: ["Documentation.docc"]
+            ]
         ),
         .macro(
             name: "EventBusMacros",
