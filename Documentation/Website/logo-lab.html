@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EventBus logo lab</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 56px 24px 80px; background: #08111f; color: #f3f8ff; }
+    main { width: min(1080px, 100%); margin: auto; }
+    h1 { margin: 0; font-size: clamp(36px, 6vw, 64px); letter-spacing: -.05em; }
+    header p { max-width: 650px; margin: 12px 0 36px; color: #9db0c7; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    article { padding: 28px; border: 1px solid rgba(157,190,226,.16); border-radius: 18px; background: linear-gradient(145deg, #122136, #0b1626); }
+    h2 { margin: 0 0 24px; font-size: 17px; }
+    .sizes { display: flex; min-height: 130px; align-items: end; gap: 25px; }
+    figure { display: flex; margin: 0; align-items: center; gap: 6px; flex-direction: column; }
+    img { display: block; }
+    figcaption { color: #71869f; font: 10px "SFMono-Regular", monospace; }
+    .dark-sample, .light-sample { display: flex; margin-top: 20px; padding: 13px; border-radius: 11px; align-items: center; gap: 10px; font-weight: 700; }
+    .dark-sample { background: #050b14; }
+    .light-sample { background: #eef5fb; color: #112032; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header><h1>EventBus logo lab</h1><p>Side-view bus marks with a forward arrow. Each option is shown down to 16px to test silhouette and color separation.</p></header>
+    <div class="grid">
+      <article>
+        <h2>01 · Yellow bus / dark blue arrow</h2>
+        <div class="sizes">
+          <figure><img src="assets/logo-exploration/bus-yellow-blue.svg" width="96" height="96" alt=""><figcaption>96</figcaption></figure>
+          <figure><img src="assets/logo-exploration/bus-yellow-blue.svg" width="48" height="48" alt=""><figcaption>48</figcaption></figure>
+          <figure><img src="assets/logo-exploration/bus-yellow-blue.svg" width="24" height="24" alt=""><figcaption>24</figcaption></figure>
+          <figure><img src="assets/logo-exploration/bus-yellow-blue.svg" width="16" height="16" alt=""><figcaption>16</figcaption></figure>
+        </div>
+        <div class="dark-sample"><img src="assets/logo-exploration/bus-yellow-blue.svg" width="30" height="30" alt=""> EventBus</div>
+        <div class="light-sample"><img src="assets/logo-exploration/bus-yellow-blue.svg" width="30" height="30" alt=""> EventBus</div>
+      </article>
+      <article>
+        <h2>02 · Yellow bus / purple arrow</h2>
+        <div class="sizes">
+          <figure><img src="assets/logo-exploration/bus-yellow-purple.svg" width="96" height="96" alt=""><figcaption>96</figcaption></figure>
+          <figure><img src="assets/logo-exploration/bus-yellow-purple.svg" width="48" height="48" alt=""><figcaption>48</figcaption></figure>
+          <figure><img src="assets/logo-exploration/bus-yellow-purple.svg" width="24" height="24" alt=""><figcaption>24</figcaption></figure>
+          <figure><img src="assets/logo-exploration/bus-yellow-purple.svg" width="16" height="16" alt=""><figcaption>16</figcaption></figure>
+        </div>
+        <div class="dark-sample"><img src="assets/logo-exploration/bus-yellow-purple.svg" width="30" height="30" alt=""> EventBus</div>
+        <div class="light-sample"><img src="assets/logo-exploration/bus-yellow-purple.svg" width="30" height="30" alt=""> EventBus</div>
+      </article>
+      <article>
+        <h2>03 · Yellow bus / green arrow</h2>
+        <div class="sizes">
+          <figure><img src="assets/logo-exploration/bus-yellow-green.svg" width="96" height="96" alt=""><figcaption>96</figcaption></figure>
+          <figure><img src="assets/logo-exploration/bus-yellow-green.svg" width="48" height="48" alt=""><figcaption>48</figcaption></figure>
+          <figure><img src="assets/logo-exploration/bus-yellow-green.svg" width="24" height="24" alt=""><figcaption>24</figcaption></figure>
+          <figure><img src="assets/logo-exploration/bus-yellow-green.svg" width="16" height="16" alt=""><figcaption>16</figcaption></figure>
+        </div>
+        <div class="dark-sample"><img src="assets/logo-exploration/bus-yellow-green.svg" width="30" height="30" alt=""> EventBus</div>
+        <div class="light-sample"><img src="assets/logo-exploration/bus-yellow-green.svg" width="30" height="30" alt=""> EventBus</div>
+      </article>
+      <article>
+        <h2>04 · Yellow bus / deep purple arrow</h2>
+        <div class="sizes">
+          <figure><img src="assets/logo-exploration/bus-yellow-deep-purple.svg" width="96" height="96" alt=""><figcaption>96</figcaption></figure>
+          <figure><img src="assets/logo-exploration/bus-yellow-deep-purple.svg" width="48" height="48" alt=""><figcaption>48</figcaption></figure>
+          <figure><img src="assets/logo-exploration/bus-yellow-deep-purple.svg" width="24" height="24" alt=""><figcaption>24</figcaption></figure>
+          <figure><img src="assets/logo-exploration/bus-yellow-deep-purple.svg" width="16" height="16" alt=""><figcaption>16</figcaption></figure>
+        </div>
+        <div class="dark-sample"><img src="assets/logo-exploration/bus-yellow-deep-purple.svg" width="30" height="30" alt=""> EventBus</div>
+        <div class="light-sample"><img src="assets/logo-exploration/bus-yellow-deep-purple.svg" width="30" height="30" alt=""> EventBus</div>
+      </article>
+    </div>
+  </main>
+</body>
+</html>
