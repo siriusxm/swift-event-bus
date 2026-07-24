@@ -809,9 +809,9 @@ pre {
     width: 42px;
     height: 42px;
     margin-bottom: 21px;
-    border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+    border: 1px solid rgba(255, 255, 255, 0.28);
     border-radius: 11px;
-    background: color-mix(in srgb, currentColor 8%, transparent);
+    background: rgba(255, 255, 255, 0.08);
     font-family: "SFMono-Regular", monospace;
     font-size: 15px;
     font-weight: 700;
@@ -1019,6 +1019,10 @@ a.resource-card:hover {
     width: 42px;
     height: 42px;
     margin-bottom: 27px;
+    padding: 2px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 11px;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .resource-card h3 { margin: 8px 0 7px; font-size: 16px; }
@@ -1074,10 +1078,10 @@ a.resource-card:hover {
     display: grid;
     width: 42px;
     height: 42px;
-    border: 1px solid rgba(0, 0, 235, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.28);
     border-radius: 11px;
-    background: rgba(0, 0, 235, 0.13);
-    color: var(--cyan-bright);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
     font-family: "SFMono-Regular", monospace;
     place-items: center;
 }
