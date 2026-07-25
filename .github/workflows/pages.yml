@@ -37,7 +37,7 @@ jobs:
             --target EventBus \
             --disable-indexing \
             --transform-for-static-hosting \
-            --hosting-base-path swift-event-bus/docs \
+            --hosting-base-path docs \
             --output-path "$RUNNER_TEMP/eventbus-docc"
           mkdir -p pages-output/docs
           cp -R "$RUNNER_TEMP/eventbus-docc/." pages-output/docs/
