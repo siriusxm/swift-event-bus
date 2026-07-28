@@ -1,0 +1,4 @@
+# Code owners for EventBus.
+# Reviews and merges are handled by SiriusXM maintainers.
+# TODO: replace with the actual SiriusXM maintainers team or handles (e.g. @siriusxm/<team>).
+* @siriusxm/eventbus-maintainers
