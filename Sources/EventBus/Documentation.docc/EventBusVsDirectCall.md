@@ -1,10 +1,10 @@
-# `EventBus` vs Direct Call Systems
+# EventBus vs Direct Call Systems
 
 ## Overview
 
-Adopting the `EventBus` is a big cost-benefit decision. It reshapes how processes are expressed and how components communicate. And it factors out patterns that recur across complex asynchronous systems. So it is likely overkill for a simple synchronous system, but pays off as an asynchronous system scales. For general software engineering discussion of events see [here](https://martinfowler.com/eaaDev/EventNarrative.html).
+Adopting the `EventBus` is a big cost-benefit decision. It reshapes how processes are expressed and how components communicate. And it factors out patterns that recur across complex asynchronous systems. So it is likely overkill for a simple synchronous system, but pays off as an asynchronous system scales. For general software engineering discussion of events see Martin Fowler's ["Focusing On Events"](https://martinfowler.com/eaaDev/EventNarrative.html).
 
-## `EventBus` Features
+## EventBus Features
 
 ### Event Definition and Handling Framework
 
@@ -40,11 +40,11 @@ Because the `EventBus` executes asynchronous inter-service calls, it is in a cen
 
 - **Built-in Concurrency Patterns** — The `EventBus` registers handler functions with built-in concurrency patterns, including parallel, serial, and self-cancelling concurrency. You can invoke these patterns simply by declaring a `concurrencyType` in your event handler declaration. See <doc:ConcurrencyTypes> for details on each pattern, when to use it, and example handlers.
 
-## When to Use the `EventBus`
+## When to Use the EventBus
 
 Use this table as a guide.
 
-| Direct Calls May Be Better | `EventBus` May Be Better |
+| Direct Calls May Be Better | EventBus May Be Better |
 |---------------------------|------------------------|
 | More synchronous operations | More asynchronous operations |
 | Single-step or few-step processes | Multi-step processes |

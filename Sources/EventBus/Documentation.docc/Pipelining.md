@@ -250,7 +250,7 @@ func sendNotification() async throws -> Self {
 
 Even if application execution is not affected by the process timing, this method ensures process tests run consistently if they check application state after the process completion event returns.
 
-## Optional Event `sendAndWaitForResponse` Returns
+## Optional Event sendAndWaitForResponse Returns
 
 All `sendAndWait` and `appendEvent` functions return optionals, and a `nil` return means the `EventBus` has been deallocated mid-call. When that happens, your handler must exit immediately. Pencils down. No logging, reporting, state management, or attempted recovery allowed — any of these can crash the system during teardown.
 
@@ -436,7 +436,7 @@ private extension TrackedBusEvent<ObjectIdentifier, ()> {
 
 We'd recommend using the macros to simplify your code and keep internal type details from leaking out of the event definitions, but any of these solutions will work.
 
-There are extensions to these macros that help reduce integration boilerplate for events that have complex payloads. These macros internally call the payload initializers and put the initializer's fields directly into the EventBus integration methods for declaring and sending events. For these macros, mark the payload initializer with `@BusEventPayloadInit`, then use the matching payload-and-types macro:
+There are extensions to these macros that help reduce integration boilerplate for events that have complex payloads. These macros internally call the payload initializers and put the initializer's fields directly into the `EventBus` integration methods for declaring and sending events. For these macros, mark the payload initializer with `@BusEventPayloadInit`, then use the matching payload-and-types macro:
 
     @SimpleBusEventPayloadAndTypes("field")
     @ResponseHandlerPayloadAndTypes(triggerEvent: ["field"], response: ["field"])

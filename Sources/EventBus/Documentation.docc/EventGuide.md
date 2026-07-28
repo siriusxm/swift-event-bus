@@ -14,7 +14,7 @@ The `EventBus` also supports two types of handler functions you can register to 
 
 The primitives are designed to support additional event models as requirements evolve.
 
-For general software engineering discussion of events see [here](https://martinfowler.com/eaaDev/EventNarrative.html).
+For general software engineering discussion of events see Martin Fowler's ["Focusing On Events"](https://martinfowler.com/eaaDev/EventNarrative.html).
 
 ## Event Use Case Reference
 
@@ -332,7 +332,7 @@ enum CustomerDinner: RequestResponsePayloadHandler {
 
 ### Decoupled Internal Observers
 
-There are many options for expressing your processes with event flows. One option to explore is whether to have your controller/orchestrator handler functions explicitly send events to all involved components, or whether to have some components observe the process events and react without the controller/orchestrator being aware of the interaction. Each approach has its merits and drawbacks. For general discussion, see [here](https://martinfowler.com/eaaDev/EventCollaboration.html). If you decide an interaction is better modeled with an observer, use the `ResponseHandler` protocols if the observer's processing of each event should be modeled as unique, or `LinkedEventPayloadHandler` to reuse the observer's event responses (see [above](#reusing-response-payloads-and-events)).
+There are many options for expressing your processes with event flows. One option to explore is whether to have your controller/orchestrator handler functions explicitly send events to all involved components, or whether to have some components observe the process events and react without the controller/orchestrator being aware of the interaction. Each approach has its merits and drawbacks. For general discussion, see Martin Fowler's ["Event Collaboration"](https://martinfowler.com/eaaDev/EventCollaboration.html). If you decide an interaction is better modeled with an observer, use the `ResponseHandler` protocols if the observer's processing of each event should be modeled as unique, or `LinkedEventPayloadHandler` to reuse the observer's event responses (see ["Reusing Response Payloads And Events" above](#reusing-response-payloads-and-events)).
 
 ```swift
 struct SamsMotherHandler: Sendable {

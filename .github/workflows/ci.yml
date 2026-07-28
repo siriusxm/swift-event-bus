@@ -14,7 +14,7 @@ jobs:
     name: Build & Test
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Pin to a Swift 6.2 toolchain to match the package's swift-tools-version.
       # `latest-stable` pulls Swift 6.3+, whose 6.3-only diagnostics (e.g.
       # #WeakMutability) do not apply to a package that targets 6.2.
@@ -33,7 +33,7 @@ jobs:
     name: SwiftLint
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install SwiftLint
         run: brew install swiftlint
       - name: Lint

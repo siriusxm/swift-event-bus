@@ -1,4 +1,4 @@
-# Concurrency Types in `EventBus`
+# Concurrency Types in EventBus
 
 ## Overview
 
@@ -6,11 +6,11 @@ The `EventBus` sits at the center of your system's asynchronous code, invoking h
 
 The `EventBus` concurrency types are patterned after the standard "merge" flattening operators in RX frameworks. Where in RX you would invoke a flattening operator for a stream of observables coming into a handler, using the `EventBus` you declare a `concurrencyType` in the handler's type declaration:
 
-| `concurrencyType` | RX merge function | Behavior |
+| concurrencyType | RX merge function | Behavior |
 |-------------------|-------------------|----------|
-| `.parallel` | `mergeMap` (a.k.a. `flatMap`) | Every event spawns its own handler invocation; all run concurrently. (Default.) |
-| `.serial` | `concatMap` | Events queue in arrival order; each invocation runs to completion before the next starts. |
-| `.restart` | `switchMap` | A new event cancels the in-flight invocation, if any, and starts a fresh one. |
+| .parallel | mergeMap (a.k.a. flatMap) | Every event spawns its own handler invocation; all run concurrently. (Default.) |
+| .serial | concatMap | Events queue in arrival order; each invocation runs to completion before the next starts. |
+| .restart | switchMap | A new event cancels the in-flight invocation, if any, and starts a fresh one. |
 
 A fourth behavior, corresponding to RX's `exhaustMap`, is not currently included in `EventBus`. In that model, a new event is dropped before execution if a previous invocation is still in flight.
 
@@ -26,7 +26,7 @@ enum MyHandler: RequestResponsePayloadHandler {
 
 To choose a `concurrencyType`, consider what should happen when events arrive faster than the handler can process them, taking into account the requirements of the service function that the handler invokes. The sections below describe each type, the kinds of services that benefit from it, and where to find detailed examples.
 
-## Parallel — `mergeMap`
+## Parallel — mergeMap
 
 Use `.parallel` when each invocation of the handler is independent of every other. New events spawn new handler tasks and the `EventBus` processes them concurrently. So if ten events arrive in quick succession, ten handler tasks will run in parallel and each one will publish its response independently when it completes.
 
@@ -58,7 +58,7 @@ struct AnalyticsService: Sendable {
 
 `.parallel` is the default `concurrencyType` for `RequestResponsePayloadHandler` and `RequestResponseTrackedBusEventHandler`, so every example in the README is also a `.parallel` example. See ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample1()`` for the most basic of these.
 
-## Serial — `concatMap`
+## Serial — concatMap
 
 Use `.serial` when each invocation of the handler depends on the cumulative effect of previous invocations, or operates on a shared resource that cannot tolerate concurrent access. Events queue in the order they arrive and the `EventBus` runs them one at a time, completing each invocation before starting the next.
 
@@ -90,7 +90,7 @@ struct PlaybackQueueService: Sendable {
 
 There are two ways to provide serial access to a service's mutable state: have the service serialize itself (typically by being an `actor`) and use a `.parallel` handler, or leave the service unguarded and use a `.serial` handler so that the `EventBus` does the serialization at the handler boundary. See ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsConcurrencyTypes/serialAccessViaActorService()`` and ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsConcurrencyTypes/serialAccessViaSerialHandler()`` for both patterns side by side. For a `.serial` tracked handler that coordinates a nested `.parallel` payload handler, see ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsConcurrencyTypes/serialTrackedBusEventHandler()``.
 
-## Restart — `switchMap`
+## Restart — switchMap
 
 Use `.restart` when only the latest event matters and any in-flight processing of older events represents wasted work that can be safely abandoned. When a new event arrives, the `EventBus` cancels the previously running invocation (if any) before starting the new one.
 

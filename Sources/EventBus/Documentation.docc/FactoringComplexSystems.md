@@ -1,9 +1,9 @@
-# Factoring Complex Systems With `EventBus`
+# Factoring Complex Systems With EventBus
 
 ## Overview
 Complex systems don't organize themselves. This article describes how to factor your system with the `EventBus` so it helps manage complexity instead of adding more.
 
-## Everything is `Sendable`
+## Everything is Sendable
 The `EventBus` and all `BusEvent`s are `Sendable`. Complex asynchronous systems can introduce race conditions, deadlocks, retention cycles, deallocation crashes, and other difficult issues. To reduce that complexity, the `EventBus` internally synchronizes its handler registration and event dispatch with lock isolation, so its API is safe to call from any concurrency context.
 
 To satisfy Swift's strict concurrency checking without using `@unchecked Sendable`, all functions or closures registered as handlers must also be `Sendable`, and this requirement cascades to the handler and service objects that implement those functions. This provides a good baseline, but it will not prevent every concurrency or lifetime problem by itself. Keep concurrency and reference-retention issues front-of-mind as you design the system.
@@ -47,7 +47,7 @@ When a payload contains a single value, whether primitive or structured, use it 
 
 See ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample4()``
 
-## `EventBus` Deallocation
+## EventBus Deallocation
 The owner of an `EventBus` is usually the top-level API owner, controller, or orchestrator for the event-driven subsystem. That owner should retain one strong reference to the `EventBus` and release it when appropriate for the app or service lifecycle. When that owner releases the bus, registered handlers and services should release without retention cycles.
 
 To make this work, neither handler nor service definitions should retain strong references to the `EventBus` in local variables or members. Following the above conventions, handlers should be lightweight adapters that capture only the service dependencies they need and delegate the real work to those services.
@@ -62,7 +62,7 @@ The same pattern applies when a top-level Controller or Orchestrator handler sen
 
 See ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsDeallocation/nestedServiceHandlerDeallocationExample()``
 
-## Weak `EventBus` References
+## Weak EventBus References
 Some subsystems start long-lived periodic work, such as timers or polling loops. When using the `EventBus`, there will be handlers associated with those systems. These handlers can start internal processes by sending events back into the `EventBus` long after any single handler function is invoked. In these cases, the handler should not retain a strong `EventBus` reference in the timer or worker object. Instead, best practice is to pass a closure that reads the weak `EventBus` callback from an initiating handler function's input event.
 
 The timer or worker should re-check that weak reference each time it wants to send an event. If the callback is `nil`, the `EventBus` owner has released the bus and the timer should stop cleanly. This lets timer-driven code avoid retention cycles while still sending periodic events while the bus is alive.

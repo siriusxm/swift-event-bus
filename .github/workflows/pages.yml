@@ -49,6 +49,7 @@ jobs:
           test -d pages-output/docs/css
           test -n "$(find pages-output/docs/js -type f -name '*.js' -print -quit)"
           test -n "$(find pages-output/docs/css -type f -name '*.css' -print -quit)"
+          grep -Fq 'var baseUrl = "/docs/"' pages-output/docs/documentation/eventbus/index.html
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4
