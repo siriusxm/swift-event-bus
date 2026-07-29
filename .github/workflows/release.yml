@@ -25,7 +25,7 @@ env:
 jobs:
   validate:
     name: Validate release
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v5
       - name: Validate tag and release notes
@@ -38,7 +38,7 @@ jobs:
       - name: Select Xcode (Swift 6.2)
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '26.0'
+          xcode-version: '26.4'
       - name: Swift version
         run: swift --version
       - name: Build release configuration

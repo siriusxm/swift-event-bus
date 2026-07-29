@@ -29,8 +29,8 @@ let swiftSyntaxVersion: String = {
 let package = Package(
     name: "EventBus",
     platforms: [
-        .iOS(.v16),
-        .tvOS(.v16),
+        .iOS(.v18),
+        .tvOS(.v18),
         .macOS(.v13),
         .watchOS(.v10),
     ],
