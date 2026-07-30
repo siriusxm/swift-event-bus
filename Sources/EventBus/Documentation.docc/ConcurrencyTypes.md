@@ -56,7 +56,7 @@ struct AnalyticsService: Sendable {
 }
 ```
 
-`.parallel` is the default `concurrencyType` for `RequestResponsePayloadHandler` and `RequestResponseTrackedBusEventHandler`, so every example in the README is also a `.parallel` example. See ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample1()`` for the most basic of these.
+`.parallel` is the default `concurrencyType` for `RequestResponsePayloadHandler` and `RequestResponseTrackedBusEventHandler`, so every example in the README is also a `.parallel` example. See [readMeExample1()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L26) for the most basic of these.
 
 ## Serial — concatMap
 
@@ -88,7 +88,7 @@ struct PlaybackQueueService: Sendable {
 }
 ```
 
-There are two ways to provide serial access to a service's mutable state: have the service serialize itself (typically by being an `actor`) and use a `.parallel` handler, or leave the service unguarded and use a `.serial` handler so that the `EventBus` does the serialization at the handler boundary. See ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsConcurrencyTypes/serialAccessViaActorService()`` and ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsConcurrencyTypes/serialAccessViaSerialHandler()`` for both patterns side by side. For a `.serial` tracked handler that coordinates a nested `.parallel` payload handler, see ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsConcurrencyTypes/serialTrackedBusEventHandler()``.
+There are two ways to provide serial access to a service's mutable state: have the service serialize itself (typically by being an `actor`) and use a `.parallel` handler, or leave the service unguarded and use a `.serial` handler so that the `EventBus` does the serialization at the handler boundary. See [serialAccessViaActorService()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusDeepExampleTests%2BConcurrencyTypes.swift#L38) and [serialAccessViaSerialHandler()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusDeepExampleTests%2BConcurrencyTypes.swift#L88) for both patterns side by side. For a `.serial` tracked handler that coordinates a nested `.parallel` payload handler, see [serialTrackedBusEventHandler()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusDeepExampleTests%2BConcurrencyTypes.swift#L127).
 
 ## Restart — switchMap
 
@@ -121,4 +121,4 @@ struct SearchService: Sendable {
 }
 ```
 
-See ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsConcurrencyTypes/restartHandlerCancelsCleanly()`` for a search-as-you-type handler that cancels cleanly when a new event arrives.
+See [restartHandlerCancelsCleanly()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusDeepExampleTests%2BConcurrencyTypes.swift#L195) for a search-as-you-type handler that cancels cleanly when a new event arrives.

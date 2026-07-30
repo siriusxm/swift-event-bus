@@ -303,7 +303,7 @@ public extension RequestResponsePayloadHandler where RequestPayload == Void {
     /// Sends this event from within a `TrackedBusEventHandler` function without waiting for a response.
     ///
     /// This is a convenience method for handlers that don't require input data.
-    /// See ``send(inputEvent:payload:)`` for full documentation.
+    /// See ``RequestResponseEventHandler/send(inputEvent:payload:)`` for full documentation.
     ///
     /// - Parameter inputEvent: The `TrackedBusEvent` that is the latest event in the chain of the `TrackedBusEventHandler` function.
     static func send(inputEvent: AnyTrackedBusEventType) async {
@@ -313,7 +313,7 @@ public extension RequestResponsePayloadHandler where RequestPayload == Void {
     /// Sends this event from a function that has access to an `EventBus` without waiting for a response.
     ///
     /// This is a convenience method for handlers that don't require input data.
-    /// See ``send(eventBus:payload:)`` for full documentation.
+    /// See ``RequestResponseEventHandler/send(eventBus:payload:)`` for full documentation.
     ///
     /// - Parameter eventBus: A reference to an `EventBus` into which the new event will be sent.
     static func send(eventBus: EventBus) async {
@@ -371,7 +371,7 @@ public extension RequestResponseTrackedBusEventHandler where RequestPayload == V
     /// Sends this event from within a `TrackedBusEventHandler` function without waiting for a response.
     ///
     /// This is a convenience method for handlers that don't require input data.
-    /// See ``send(inputEvent:payload:)`` for full documentation.
+    /// See ``RequestResponseEventHandler/send(inputEvent:payload:)`` for full documentation.
     ///
     /// - Parameter inputEvent: The `TrackedBusEvent` that is the latest event in the chain of the `TrackedBusEventHandler` function.
     static func send(inputEvent: AnyTrackedBusEventType) async {
@@ -381,7 +381,7 @@ public extension RequestResponseTrackedBusEventHandler where RequestPayload == V
     /// Sends this event from a function that has access to an `EventBus` without waiting for a response.
     ///
     /// This is a convenience method for handlers that don't require input data.
-    /// See ``send(eventBus:payload:)`` for full documentation.
+    /// See ``RequestResponseEventHandler/send(eventBus:payload:)`` for full documentation.
     ///
     /// - Parameter eventBus: A reference to an `EventBus` into which the new event will be sent.
     static func send(eventBus: EventBus) async {

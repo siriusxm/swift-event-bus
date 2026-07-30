@@ -13,7 +13,7 @@ return try await inputEvent
     .writeCritique()
 ```
 
-See ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsPipelining/pipelinedControllerFlow()`` for a complete working example.
+See [pipelinedControllerFlow()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusDeepExampleTests%2BPipelining.swift#L253) for a complete working example.
 
 ## Pipeline Functions Live On Events
 
@@ -234,7 +234,7 @@ enum TestLink: SimpleBusEventLink {
 let response = try await TestLink.sendAndWaitForResponse(eventBus: eventBus)
 ```
 
-See ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsPipelining/pipelineControllerServiceTestInterimResponse()`` for a working example of using a `SimpleBusEventLink` to wait on the color response event rather than the process completion response.
+See [pipelineControllerServiceTestInterimResponse()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusDeepExampleTests%2BPipelining.swift#L344) for a working example of using a `SimpleBusEventLink` to wait on the color response event rather than the process completion response.
 
 If the answer to the first question above is that the results of the process step are not used for later steps, but the answer to the second question is still no, that the process is not complete until the process step is done, then you can have the process wait for the step, but still exclude its results from the event chain. This will come up if a process step changes the application state or an external system state but does not change the internal process state. In this case, you will want the process to await the step's completion so that external change does not race with the completion of the whole process. To put that wait inline with the rest of the process, code like this:
 
@@ -305,7 +305,7 @@ return try await CritiqueWritingEvent.WriteDoubleFoodCritique.sendAndWaitForResp
 
 After this step, the double-food critique handler receives a payload with a non-optional `food2`, so it does not need to repeat the same validation.
 
-For an example of the branch taken when `food2` is `nil`, see ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsPipelining/pipelinedControllerFlowWithoutSecondFood()``.
+For an example of the branch taken when `food2` is `nil`, see [pipelinedControllerFlowWithoutSecondFood()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusDeepExampleTests%2BPipelining.swift#L269).
 
 ## Calling Multiple Services In One Pipeline Function
 
@@ -353,7 +353,7 @@ PipeliningColoredFoodControllerEvent.MakeColoredFood.handlerRegistration { input
 
 Individual pipeline functions should throw when they cannot produce a valid next state. The top-level handler can catch all process errors and append a failure response with the data the caller expects.
 
-For failure-path examples at each pipeline stage, see ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsPipelining/pipelinedControllerFlowWhenColorServiceFails()``, ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsPipelining/pipelinedControllerFlowWhenFoodServiceFails()``, and ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsPipelining/pipelinedControllerFlowWhenCritiqueServiceFails()``.
+For failure-path examples at each pipeline stage, see [pipelinedControllerFlowWhenColorServiceFails()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusDeepExampleTests%2BPipelining.swift#L287), [pipelinedControllerFlowWhenFoodServiceFails()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusDeepExampleTests%2BPipelining.swift#L306), and [pipelinedControllerFlowWhenCritiqueServiceFails()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusDeepExampleTests%2BPipelining.swift#L325).
 
 This style has two advantages:
 
@@ -398,7 +398,7 @@ The compiler error would be something like:
 
 The problem is a Swift language limitation. When you declare events that conform to the `SimpleBusEventType` or any of the Handler types, the protocol extensions internally declare the event types as needed for triggering events, requests, and responses. But Swift doesn't reference those as valid when you declare your conforming event.
 
-There are several ways to fix this. Easiest is to use macros that the `EventBus` project provides that declare all the right definitions for you. If you look at the ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsPipelining`` file where the shared event declarations are at the top, you'll see examples like this:
+There are several ways to fix this. Easiest is to use macros that the `EventBus` project provides that declare all the right definitions for you. If you look at [EventBusDeepExampleTests+Pipelining.swift](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusDeepExampleTests%2BPipelining.swift), where the shared event declarations are at the top, you'll see examples like this:
 
 ```swift
     @RequestResponseHandlerTypes

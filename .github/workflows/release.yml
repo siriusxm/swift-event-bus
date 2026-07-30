@@ -35,6 +35,8 @@ jobs:
             exit 1
           fi
           test -f "Documentation/Releases/$RELEASE_VERSION.md"
+      - name: Validate DocC test links
+        run: ruby scripts/update_docc_test_links.rb --check
       - name: Select Xcode (Swift 6.2)
         uses: maxim-lobanov/setup-xcode@v1
         with:

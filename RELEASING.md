@@ -8,13 +8,21 @@
 2. Add `Documentation/Releases/<version>.md` with the GitHub release notes.
 3. Update `RELEASES.md` so the current supported prerelease, stable release, and previous-version table are accurate.
 4. Update the README and website installation snippets when the recommended version changes.
-5. Merge the release-preparation pull request into `main` after CI and Pages validation pass.
+5. Refresh the GitHub line anchors in DocC links to test examples. From the repository root, run:
+
+   ```bash
+   ruby scripts/update_docc_test_links.rb
+   ```
+
+   Commit any resulting documentation changes. CI and the `Release` workflow run the same script with `--check` and fail if committed anchors are stale.
+
+6. Push or update the release-preparation pull request and wait for CI and Pages validation to pass.
+7. Run the `Release` workflow manually from the release-preparation branch, entering the planned version. Confirm that its validation, release build, and tests pass without publishing.
+8. Merge the release-preparation pull request into `main`.
 
 ## Publish a release
 
-Before creating the tag, run the `Release` workflow manually from the release-preparation branch. Enter the planned version, such as `1.0.0-beta.1`. A manual run validates the version and notes, builds the release configuration, and runs all tests without creating a tag or GitHub release.
-
-After the dry run and release-preparation pull request pass, merge the pull request. Then tag the reviewed commit on `main` and push the tag:
+After the release-preparation pull request and dry run pass, tag the reviewed commit on `main` and push the tag:
 
 ```bash
 git switch main

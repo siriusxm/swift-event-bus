@@ -15,6 +15,8 @@ jobs:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v5
+      - name: Validate DocC test links
+        run: ruby scripts/update_docc_test_links.rb --check
       # Pin the Xcode and Swift 6.2 toolchain so compiler diagnostics and
       # SwiftSyntax dependency selection remain reproducible.
       - name: Select Xcode (Swift 6.2)
@@ -25,6 +27,10 @@ jobs:
         run: swift --version
       - name: Build
         run: swift build
+      - name: Build for iOS 16+
+        run: xcodebuild -scheme EventBus -destination 'generic/platform=iOS' build
+      - name: Build for tvOS 16+
+        run: xcodebuild -scheme EventBus -destination 'generic/platform=tvOS' build
       - name: Test
         run: swift test
 
