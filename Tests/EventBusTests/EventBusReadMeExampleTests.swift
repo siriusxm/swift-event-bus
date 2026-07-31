@@ -86,9 +86,14 @@ enum EventBusExampleTests {
                 enum LunchTime: SimpleBusEventType {}
                 let eventBus: EventBus
 
+                // The first hoop we jump is requiring a lock-isolated array of messages to be passed into our "system" class
+                // This will be used to pass messages out of the logging function.
                 init(loggedMessages: LockIsolated<[String]>) {
                     // The EventBus has a built in logger that allows you to define "LogPoints" that you can save and reuse for specific events.
-                    // Logging is disabled unless an output closure is supplied. This test captures output rather than writing to the console.
+                    // Here, since the logger is the only entity that's responding to the event, we're stretching the log function to save off test messages.
+                    // Then we can automatically check if the event was sent using a test expectation rather than manually reading the log message.
+                    // But coding this way has the downside of relying on EventBus internals for a consistent test. See comments below.
+                   // Logging is disabled unless an output closure is supplied.
                     let logger = EventBusLogger(
                         logPoints: [
                             LogPoint(
@@ -97,6 +102,8 @@ enum EventBusExampleTests {
                                 formatPayload: { "LunchTime event sent to EventBus" }
                             ),
                         ],
+                        // Here in our logger initialization we populate the "output" hook that is called when the EventBus logs.
+                        // Instead of logging, we save off the log message into our lock-isolated array, so we can verify it later.
                         output: { message in
                             loggedMessages.withValue { $0.append(message) }
                         }
@@ -120,7 +127,7 @@ enum EventBusExampleTests {
             let loggedMessages = LockIsolated<[String]>([])
             let mySystem = MySystem(loggedMessages: loggedMessages)
             // There is a tricky nuance here worth explaining. Normally code like the following is suspicious and can lead to test race conditions.
-            // I.e. Generally when you call an async function, you are not guaranteed it will operate atomically without yielding.
+            // I.e. Generally when you call an async function like lunchLoop(), you are not guaranteed it will operate atomically without yielding.
             // A symptom would be a test that passes when run by itself, but intermittently fails expectations when run with other tests, or on CI.
             // Here we can get away with this consistently by relying on the internals of EventBus.send.
             // It calls the logger function we're using before any yield, so our test variable will be set before the async function returns.
