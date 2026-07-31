@@ -15,6 +15,7 @@
 //
 
 @testable import EventBus
+import ConcurrencyExtras
 import Testing
 
 @Suite("EventBusTests")
@@ -55,7 +56,6 @@ enum EventBusRequestResponseEventHandlerTests {
             // Usually handler functions will be instance methods on a non-trivial object or actor
             let handler: SamMealHandler.HandlerType = { mealName in
                 let food = ColoredFoodTestService.generateFood()
-                logger.debug("🍽️ Sam had \(food) for \(mealName)", tag: "eventBus")
                 return (food, mealName)
             }
 
@@ -124,8 +124,9 @@ enum EventBusRequestResponseEventHandlerTests {
             #expect(responseTrackedEvent.busEvent.eventType == ObjectIdentifier(SamMealHandler.ResponseEvent.self))
             #expect(responseTrackedEvent.busEvent.payload == ())
 
+            let didHandleMeal = LockIsolated(false)
             let samMealHandler: SamMealHandler.HandlerType = { _ in
-                logger.debug("🍽️ Sam had \(ColoredFoodTestService.generateFood())", tag: "eventBus")
+                didHandleMeal.setValue(true)
             }
 
             eventBus.register(
@@ -137,6 +138,7 @@ enum EventBusRequestResponseEventHandlerTests {
             let result = try await SamMealHandler.sendAndWaitForResponse(eventBus: eventBus)
             #expect(result.busEvent.eventType == ObjectIdentifier(SamMealHandler.ResponseEvent.self))
             #expect(result.busEvent.payload == ())
+            #expect(didHandleMeal.value)
 
             // this picks the request event out of the sendAndWait result's history
             guard let historyLunchEvent: SamMealHandler.Request = try? result.findFirstEvent(

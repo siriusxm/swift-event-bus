@@ -15,6 +15,7 @@
 //
 
 @testable import EventBus
+import ConcurrencyExtras
 import EventBusTestSupport
 import Foundation
 import Testing
@@ -53,9 +54,9 @@ enum EventBusResponseEventHandlerTests {
 
             // In this simplified case, we're declaring the handler function as an independent closure.
             // Usually handler functions will be instance methods on a non-trivial object or actor
+            let lunches = LockIsolated<[String]>([])
             let handler: SamLunchHandler.HandlerType = { _ in
-                let lunch = ColoredFoodTestService.generateFood()
-                logger.debug("🍽️ Sam had \(lunch) for lunch", tag: "eventBus")
+                lunches.withValue { $0.append(ColoredFoodTestService.generateFood()) }
             }
 
             eventBus.register(
@@ -92,6 +93,8 @@ enum EventBusResponseEventHandlerTests {
             }
 
             try await checkResult(SamLunchLink.sendAndWaitForResponse(eventBus: eventBus))
+            #expect(lunches.value.count == 4)
+            #expect(lunches.value.allSatisfy { ColoredFoodTestService.isFoodValid(food: $0) })
         }
 
         @Test
@@ -118,9 +121,10 @@ enum EventBusResponseEventHandlerTests {
 
             // In this simplified case, we're declaring the handler function as an independent closure.
             // Usually handler functions will be instance methods on a non-trivial object or actor
-            let handler: SamLunchHandler.HandlerType = { _ in
+            let servedLunches = LockIsolated<[(occasion: String, food: String)]>([])
+            let handler: SamLunchHandler.HandlerType = { occasion in
                 let lunch = ColoredFoodTestService.generateFood()
-                logger.debug("🍽️ Sam had \(lunch) for lunch", tag: "eventBus")
+                servedLunches.withValue { $0.append((occasion, lunch)) }
                 return lunch
             }
 
@@ -137,6 +141,8 @@ enum EventBusResponseEventHandlerTests {
             let result = try await SamLunchLink.sendAndWaitForResponse(eventBus: eventBus, payload: secondLunchString)
             #expect(result.busEvent.eventType == ObjectIdentifier(SamLunchHandler.self))
             #expect(ColoredFoodTestService.isFoodValid(food: result.busEvent.payload))
+            #expect(servedLunches.value.map(\.occasion) == [secondLunchString])
+            #expect(servedLunches.value.map(\.food) == [result.busEvent.payload])
 
             // this picks the triggering LunchTime event out of the sendAndWait result's history
             let historyLunchEvent: LunchTime.Event? = try? result.findFirstEvent(ofType: LunchTime.eventType)
@@ -160,11 +166,17 @@ enum EventBusResponseEventHandlerTests {
                 typealias ResponsePayload = Void
             }
 
+            let servedLunches = LockIsolated<[(customer: String, food: String)]>([])
             let lunchHandler: SamLunchHandler.HandlerType = { inputEvent in
-                guard let lunchOrder = try await DoorDashHandler.sendAndWaitForResponse(inputEvent: inputEvent, payload: "Sam") else {
+                guard let lunchOrder = try await DoorDashHandler.sendAndWaitForResponse(
+                    inputEvent: inputEvent,
+                    payload: "Sam"
+                ) else {
                     throw EventBusError.unexpectedError("unexpected nil response in test")
                 }
-                logger.debug("🍽️ Sam had \(lunchOrder.busEvent.payload.food) for lunch", tag: "eventBus")
+                servedLunches.withValue {
+                    $0.append((lunchOrder.busEvent.payload.customerName, lunchOrder.busEvent.payload.food))
+                }
                 return await inputEvent.appendEvent(SamLunchHandler.response())
             }
 
@@ -183,9 +195,10 @@ enum EventBusResponseEventHandlerTests {
                 typealias ResponsePayload = DoorDashOrderResponse
             }
 
+            let foodOrders = LockIsolated<[(customer: String, food: String)]>([])
             let doorDashHandler: DoorDashHandler.HandlerType = { customerName in
                 let food = ColoredFoodTestService.generateFood()
-                logger.debug("🍽️ DoorDash making \(food) for \(customerName)", tag: "eventBus")
+                foodOrders.withValue { $0.append((customerName, food)) }
                 return DoorDashOrderResponse(customerName: customerName, food: food)
             }
 
@@ -229,6 +242,9 @@ enum EventBusResponseEventHandlerTests {
             }
 
             try await checkSamLunchResult(result: SamLunchLink.sendAndWaitForResponse(eventBus: eventBus))
+            #expect(foodOrders.value.map(\.customer) == ["Sam", "Sam", "Sam", "Sam"])
+            #expect(foodOrders.value.map(\.food) == servedLunches.value.map(\.food))
+            #expect(servedLunches.value.map(\.customer) == ["Sam", "Sam", "Sam", "Sam"])
         }
 
         @Test
@@ -288,7 +304,6 @@ extension EventBusResponseEventHandlerTests {
                     date: PersonEatingLunch.TriggerEvent.Payload
                 ) async throws -> PersonEatingLunch.ResponsePayload {
                     let lunch = ColoredFoodTestService.generateFood()
-                    logger.debug("🍽️ \(person) had: \(lunch) for lunch at: \(date)", tag: "eventBus")
                     return PersonEatingLunchPayload(
                         person: person,
                         food: lunch,

@@ -36,7 +36,7 @@ private final class EventBusLoggerWrapper: @unchecked Sendable, EventBusLoggable
         date: @escaping () -> Date = { .now }
     ) {
         // Initialize the actual EventBusLogger under test
-        realLogger = EventBusLogger(logPoints: logPoints, tag: tag, date: date)
+        realLogger = EventBusLogger(logPoints: logPoints, tag: tag, output: { _ in }, date: date)
     }
 
     func log(
@@ -255,6 +255,7 @@ struct EventBusLoggerTests {
         let logger = EventBusLogger(
             logPoints: [logPoint],
             tag: "eventBus",
+            output: { _ in },
             date: { createStaticDate() }
         )
         let trackedEvent = ErasedTrackedBusEvent(
