@@ -99,7 +99,7 @@ let lunchHandlers: [any Handlable] = [
 
 ```
 
-For examples of nested events sent from a `TrackedBusEventHandler`, see [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L244).
+For examples of nested events sent from a `TrackedBusEventHandler`, see [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L251).
 
 The above example implements the handler function using event pipelining. For further examples of best practices using pipelining in `TrackedBusEventHandler`s, see <doc:Pipelining>.
 
@@ -121,7 +121,7 @@ let foodResponse = try await ColoredFoodService.ColoredFoodDelivery.sendAndWaitF
 let myGreenEggsAndHam = foodResponse.busEvent.payload
 ```
 
-For the complete example, see [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L244).
+For the complete example, see [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L251).
 
 ### Public API Events
 
@@ -378,7 +378,7 @@ For more discussion and examples, see <doc:Pipelining#Main-Events-And-Side-Effec
 
 The `EventBus` defines two event primitives. First, `BusEvent`s are lightweight, `Sendable` values that hold an `eventType` as a routing ID and a `payload` of user-defined data. Anyone with access to an `EventBus` can create a `BusEvent` and send it into the bus.
 
-Second, when an event is sent, the `EventBus` wraps it in a similar type with a unique sequence index, routing history, and a weak back-reference to the bus. This wrapper is called a `TrackedBusEvent`. Callers can use a `TrackedBusEvent` to spawn related events that share routing history, or to access the `EventBus` back-reference. Only the `EventBus` can create a `TrackedBusEvent` so it can wire all its data correctly. This is mostly done internally in sending and handling functions. But the `EventBus` also exposes an `appendEvent` function to allow users to manually chain a regular `BusEvent` into a `TrackedBusEvent`'s history. See [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L244).
+Second, when an event is sent, the `EventBus` wraps it in a similar type with a unique sequence index, routing history, and a weak back-reference to the bus. This wrapper is called a `TrackedBusEvent`. Callers can use a `TrackedBusEvent` to spawn related events that share routing history, or to access the `EventBus` back-reference. Only the `EventBus` can create a `TrackedBusEvent` so it can wire all its data correctly. This is mostly done internally in sending and handling functions. But the `EventBus` also exposes an `appendEvent` function to allow users to manually chain a regular `BusEvent` into a `TrackedBusEvent`'s history. See [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L251).
 
 The primitives are deliberately low-level and flexible so the `EventBus` can support many event paradigms. But using them directly puts the integration work on you. You maintain your own event routing IDs and match them by hand across event definition, handler registration, and event sending. The result: added boilerplate, cut-and-paste errors, and bugs that don't surface until runtime.
 
@@ -424,7 +424,7 @@ typealias HandlerType = @Sendable (TrackedRequest) async throws -> TrackedRespon
 
 `TrackedBusEventHandler` integration in the protocol extensions is simpler than for payload handlers. It simply passes the triggering event straight through to the handler function, and sends the result event back into the bus. Having the `TrackedBusEvent` available inside the handler function gives function writers more power and flexibility to send nested events back into the bus, implement complex processes as Controllers or Orchestrators, manage event chaining and concurrency as main events or side effects in a process, or retain and share weak `EventBus` references. The price for this power is that the handler writers need to manually manage the `TrackedBusEvent` chain within the function and create a return `TrackedBusEvent`, often using the `EventBus`'s `appendEvent` function.
 
-For examples of nested events sent from a `TrackedBusEventHandler`, see [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L244).
+For examples of nested events sent from a `TrackedBusEventHandler`, see [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L251).
 
 For further examples of best practices using pipelining in `TrackedBusEventHandler`s, see <doc:Pipelining>.
 

@@ -45,7 +45,7 @@ For request and triggering events, data is usually a direct pass-through to the 
 
 When a payload contains a single value, whether primitive or structured, use it directly in event declarations as the payload. Don't put an extra wrapper around data just to include it in a payload. That creates extra boilerplate for creating and sending events.
 
-See [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L244).
+See [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L251).
 
 ## EventBus Deallocation
 The owner of an `EventBus` is usually the top-level API owner, controller, or orchestrator for the event-driven subsystem. That owner should retain one strong reference to the `EventBus` and release it when appropriate for the app or service lifecycle. When that owner releases the bus, registered handlers and services should release without retention cycles.
