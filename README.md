@@ -1,4 +1,4 @@
-# `EventBus`
+# EventBus
 
 A shared event channel that coordinates async Swift services without coupling. The middleware layer Swift has been missing.
 
@@ -10,6 +10,7 @@ Use the `EventBus` when asynchronous interactions between services are becoming 
 
 - [EventBus website](https://siriusxm.github.io/swift-event-bus/)
 - [Documentation and API reference](https://siriusxm.github.io/swift-event-bus/docs/documentation/eventbus/)
+- [Release channels and supported versions](RELEASES.md)
 - [Releases](https://github.com/siriusxm/swift-event-bus/releases)
 - [Discussions](https://github.com/siriusxm/swift-event-bus/discussions)
 - [Report a bug](https://github.com/siriusxm/swift-event-bus/issues/new?template=bug.md)
@@ -28,11 +29,14 @@ Use the `EventBus` when asynchronous interactions between services are becoming 
 
 ## Installation
 
-Add `EventBus` with the Swift Package Manager:
+The current supported release is the `1.0.0-beta.1` public preview. Add it with an exact Swift Package Manager requirement:
 
 ```swift
 dependencies: [
-    .package(url: "<repository-url>", from: "<version>")
+    .package(
+        url: "https://github.com/siriusxm/swift-event-bus.git",
+        exact: "1.0.0-beta.1"
+    )
 ]
 ```
 
@@ -42,10 +46,12 @@ Then add `EventBus` to your target dependencies:
 .target(
     name: "YourTarget",
     dependencies: [
-        .product(name: "EventBus", package: "EventBus")
+        .product(name: "EventBus", package: "swift-event-bus")
     ]
 )
 ```
+
+See [Release channels and supported versions](RELEASES.md) for the supported prerelease, future stable releases, previous supported versions, and the unsupported tip-of-tree dependency.
 
 ## Quickstart
 
@@ -210,7 +216,7 @@ See <doc:ConcurrencyTypes> for examples and selection guidance.
 
 ## Project Status
 
-`EventBus` is being prepared for open source release. Public package URL, release process, contribution policy, code of conduct, security policy, and roadmap will be added separately.
+`1.0.0-beta.1` is the first public prerelease and supported preview of `EventBus`. The stable release will follow a period of public availability and evaluation. See [Release channels and supported versions](RELEASES.md).
 
 ## License
 

@@ -29,7 +29,6 @@ public protocol EventBusCallback: Sendable {
     /// - Parameters:
     ///   - event: a BusEventType object or struct, which contains the eventType identifier and the payload data.
     ///            both must match a handler registered to the bus for this to be handled, otherwise it will be ignored
-    /// - Returns: nothing
     func send(_ event: BusEvent<some Equatable & Sendable, some Sendable>) async
 
     /// Sends an event into the bus without waiting for a response, and appends event tracking to a previous event history.

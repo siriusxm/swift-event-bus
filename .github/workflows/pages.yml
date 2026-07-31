@@ -18,13 +18,13 @@ permissions:
 jobs:
   build:
     name: Build website and documentation
-    runs-on: macos-latest
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v5
       - name: Select Xcode (Swift 6.2)
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '26.0'
+          xcode-version: '26.4'
       - name: Assemble website
         run: |
           mkdir -p pages-output
@@ -49,6 +49,7 @@ jobs:
           test -d pages-output/docs/css
           test -n "$(find pages-output/docs/js -type f -name '*.js' -print -quit)"
           test -n "$(find pages-output/docs/css -type f -name '*.css' -print -quit)"
+          grep -Fq 'var baseUrl = "/docs/"' pages-output/docs/documentation/eventbus/index.html
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4

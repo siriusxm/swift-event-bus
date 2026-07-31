@@ -14,7 +14,7 @@ The `EventBus` also supports two types of handler functions you can register to 
 
 The primitives are designed to support additional event models as requirements evolve.
 
-For general software engineering discussion of events see [here](https://martinfowler.com/eaaDev/EventNarrative.html).
+For general software engineering discussion of events see Martin Fowler's ["Focusing On Events"](https://martinfowler.com/eaaDev/EventNarrative.html).
 
 ## Event Use Case Reference
 
@@ -70,7 +70,7 @@ let lunchHandlers: [any Handlable] = [
 
 ```
 
-For an example using a `Void` payload, see ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample2()``
+For an example using a `Void` payload, see [readMeExample2()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L80).
 
 `ResponseTrackedBusEventHandler` is the same as `ResponsePayloadHandler` except it passes the triggering event directly to the handler function as a `TrackedBusEvent`, allowing the handler to call back into the `EventBus` API and send nested events and manipulate their results into event history without retaining a strong `EventBus` reference.
 
@@ -99,7 +99,7 @@ let lunchHandlers: [any Handlable] = [
 
 ```
 
-For examples of nested events sent from a `TrackedBusEventHandler`, see ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample4()``
+For examples of nested events sent from a `TrackedBusEventHandler`, see [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L252).
 
 The above example implements the handler function using event pipelining. For further examples of best practices using pipelining in `TrackedBusEventHandler`s, see <doc:Pipelining>.
 
@@ -121,7 +121,7 @@ let foodResponse = try await ColoredFoodService.ColoredFoodDelivery.sendAndWaitF
 let myGreenEggsAndHam = foodResponse.busEvent.payload
 ```
 
-For the complete example, see: ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample4()``
+For the complete example, see [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L252).
 
 ### Public API Events
 
@@ -185,7 +185,7 @@ struct LunchSystem: Sendable {
 let lunchResult = try await lunchSystem.eatLunchNow()
 ```
 
-For the complete example, see: ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample5()``
+For the complete example, see [readMeExample5()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests2.swift#L24).
 
 ### Reusing Response Payloads and Events
 
@@ -332,7 +332,7 @@ enum CustomerDinner: RequestResponsePayloadHandler {
 
 ### Decoupled Internal Observers
 
-There are many options for expressing your processes with event flows. One option to explore is whether to have your controller/orchestrator handler functions explicitly send events to all involved components, or whether to have some components observe the process events and react without the controller/orchestrator being aware of the interaction. Each approach has its merits and drawbacks. For general discussion, see [here](https://martinfowler.com/eaaDev/EventCollaboration.html). If you decide an interaction is better modeled with an observer, use the `ResponseHandler` protocols if the observer's processing of each event should be modeled as unique, or `LinkedEventPayloadHandler` to reuse the observer's event responses (see [above](#reusing-response-payloads-and-events)).
+There are many options for expressing your processes with event flows. One option to explore is whether to have your controller/orchestrator handler functions explicitly send events to all involved components, or whether to have some components observe the process events and react without the controller/orchestrator being aware of the interaction. Each approach has its merits and drawbacks. For general discussion, see Martin Fowler's ["Event Collaboration"](https://martinfowler.com/eaaDev/EventCollaboration.html). If you decide an interaction is better modeled with an observer, use the `ResponseHandler` protocols if the observer's processing of each event should be modeled as unique, or `LinkedEventPayloadHandler` to reuse the observer's event responses (see ["Reusing Response Payloads And Events" above](#reusing-response-payloads-and-events)).
 
 ```swift
 struct SamsMotherHandler: Sendable {
@@ -355,7 +355,7 @@ struct SamsMotherHandler: Sendable {
 
 ```
 
-For the complete example, see: ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample6()``
+For the complete example, see [readMeExample6()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests2.swift#L171).
 
 ### Testing Side Effect Events
 
@@ -370,7 +370,7 @@ enum LunchObserverTestLink: SimpleBusEventLink {
 let observerResult = try await LunchObserverTestLink.sendAndWaitForResponse(eventBus: lunchSystem.eventBus)
 ```
 
-For the complete example, see: ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample6()``
+For the complete example, see [readMeExample6()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests2.swift#L171).
 
 For more discussion and examples, see <doc:Pipelining#Main-Events-And-Side-Effects>.
 
@@ -378,11 +378,11 @@ For more discussion and examples, see <doc:Pipelining#Main-Events-And-Side-Effec
 
 The `EventBus` defines two event primitives. First, `BusEvent`s are lightweight, `Sendable` values that hold an `eventType` as a routing ID and a `payload` of user-defined data. Anyone with access to an `EventBus` can create a `BusEvent` and send it into the bus.
 
-Second, when an event is sent, the `EventBus` wraps it in a similar type with a unique sequence index, routing history, and a weak back-reference to the bus. This wrapper is called a `TrackedBusEvent`. Callers can use a `TrackedBusEvent` to spawn related events that share routing history, or to access the `EventBus` back-reference. Only the `EventBus` can create a `TrackedBusEvent` so it can wire all its data correctly. This is mostly done internally in sending and handling functions. But the `EventBus` also exposes an `appendEvent` function to allow users to manually chain a regular `BusEvent` into a `TrackedBusEvent`'s history. See ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample4()``
+Second, when an event is sent, the `EventBus` wraps it in a similar type with a unique sequence index, routing history, and a weak back-reference to the bus. This wrapper is called a `TrackedBusEvent`. Callers can use a `TrackedBusEvent` to spawn related events that share routing history, or to access the `EventBus` back-reference. Only the `EventBus` can create a `TrackedBusEvent` so it can wire all its data correctly. This is mostly done internally in sending and handling functions. But the `EventBus` also exposes an `appendEvent` function to allow users to manually chain a regular `BusEvent` into a `TrackedBusEvent`'s history. See [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L252).
 
 The primitives are deliberately low-level and flexible so the `EventBus` can support many event paradigms. But using them directly puts the integration work on you. You maintain your own event routing IDs and match them by hand across event definition, handler registration, and event sending. The result: added boilerplate, cut-and-paste errors, and bugs that don't surface until runtime.
 
-For a manual routing example using primitive `BusEvent`s, `EventBus.add`, and `sendAndWaitForMatchingResult`, see ``EventBusTests/EventBusDeepExampleTests/EventBusDeepExampleTestsManualBusEvents/manualBusEventIntegration()``
+For a manual routing example using primitive `BusEvent`s, `EventBus.add`, and `sendAndWaitForMatchingResult`, see [manualBusEventIntegration()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusDeepExampleTests%2BManualBusEvents.swift#L139).
 
 The `EventBus` provides a better alternative in a layer of Swift protocols that use the event's type directly as its routing ID and implement the integration wiring as reusable protocol extension functions that eliminate boilerplate and move most error discovery to compile time. Currently available protocols are:
 
@@ -424,7 +424,7 @@ typealias HandlerType = @Sendable (TrackedRequest) async throws -> TrackedRespon
 
 `TrackedBusEventHandler` integration in the protocol extensions is simpler than for payload handlers. It simply passes the triggering event straight through to the handler function, and sends the result event back into the bus. Having the `TrackedBusEvent` available inside the handler function gives function writers more power and flexibility to send nested events back into the bus, implement complex processes as Controllers or Orchestrators, manage event chaining and concurrency as main events or side effects in a process, or retain and share weak `EventBus` references. The price for this power is that the handler writers need to manually manage the `TrackedBusEvent` chain within the function and create a return `TrackedBusEvent`, often using the `EventBus`'s `appendEvent` function.
 
-For examples of nested events sent from a `TrackedBusEventHandler`, see ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample4()``
+For examples of nested events sent from a `TrackedBusEventHandler`, see [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L252).
 
 For further examples of best practices using pipelining in `TrackedBusEventHandler`s, see <doc:Pipelining>.
 
@@ -454,7 +454,7 @@ An advantage to using the `EventBusLogger` is that all `LogPoint`s are declared 
 
 The sequence indices are especially useful to help debug race conditions, since they indicate the exact order in which the `LogPoint`s are executed globally across the `EventBus`, so you can see if they execute in unexpected order.
 
-Here is an example list of `LogPoint`s used in ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample4()``
+Here is an example list of `LogPoint`s used in [readMeExample4()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L252).
 
 ```swift
 let logger = EventBusLogger(
