@@ -15,6 +15,7 @@
 //
 
 @testable import EventBus
+import ConcurrencyExtras
 import Testing
 
 extension EventBusRequestResponseEventHandlerTests {
@@ -56,7 +57,6 @@ extension EventBusRequestResponseEventHandlerTests {
                     return nil
                 }
                 let samMealResult = (foodResultEvent.busEvent.payload, inputEvent.busEvent.payload)
-                logger.debug("🍽️ Sam had \(samMealResult.0) for \(samMealResult.1)", tag: "eventBus")
                 guard let momInformingResult = try await MomInformingHandler.sendAndWaitForResponse(
                     inputEvent: foodResultEvent, payload: samMealResult
                 ) else {
@@ -75,8 +75,9 @@ extension EventBusRequestResponseEventHandlerTests {
             }
 
             // A payload handler that returns a void payload can be very simple, doesn't need a return statement
+            let mealsReportedToMom = LockIsolated<[FoodResultPayload]>([])
             let momInformingClosure: MomInformingHandler.HandlerType = { foodResult in
-                logger.debug("🍽️ Thank God Sam is eating. He had \(foodResult.0) for \(foodResult.1)", tag: "eventBus")
+                mealsReportedToMom.withValue { $0.append(foodResult) }
             }
 
             // note it isn't best practice to use a TrackedBusEvent handler when a simpler PayloadHandler works
@@ -126,6 +127,7 @@ extension EventBusRequestResponseEventHandlerTests {
                 return
             }
             #expect(explicitTimeoutParamChainedResult.busEvent.payload.1 == dinnerString)
+            #expect(mealsReportedToMom.value.map { $0.1 } == [lunchString, dinnerString, dinnerString])
 
             // this picks the request event out of the sendAndWait result's history
             let historyLunchEvent: SamMealHandler.Request? = try? result.findFirstEvent(
@@ -186,7 +188,6 @@ extension EventBusRequestResponseEventHandlerTests {
                 guard let foodResultEvent = try await MealMakingHandler.sendAndWaitForResponse(inputEvent: inputEvent) else {
                     return nil
                 }
-                logger.debug("🍽️ Sam had some kind of food at some meal", tag: "eventBus")
                 guard let momInformingResult = try await MomInformingHandler.sendAndWaitForResponse(inputEvent: foodResultEvent) else {
                     return nil
                 }
@@ -203,8 +204,9 @@ extension EventBusRequestResponseEventHandlerTests {
             }
 
             // A payload handler that returns a void payload can be very simple, doesn't need a return statement
+            let didInformMom = LockIsolated(false)
             let momInformingClosure: MomInformingHandler.HandlerType = { _ in
-                logger.debug("🍽️ Thank God Sam is eating, but he didn't tell me what or when", tag: "eventBus")
+                didInformMom.setValue(true)
             }
 
             // note it isn't best practice to use a TrackedBusEvent handler when a simpler PayloadHandler works
@@ -234,6 +236,7 @@ extension EventBusRequestResponseEventHandlerTests {
             let result = try await SamMealHandler.sendAndWaitForResponse(eventBus: eventBus)
             #expect(result.busEvent.eventType == ObjectIdentifier(SamMealHandler.ResponseEvent.self))
             #expect(result.busEvent.payload == ())
+            #expect(didInformMom.value)
 
             // this picks the request event out of the sendAndWait result's history
             guard let historyLunchEvent: SamMealHandler.Request = try? result.findFirstEvent(

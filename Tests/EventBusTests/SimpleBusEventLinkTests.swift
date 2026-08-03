@@ -15,6 +15,7 @@
 //
 
 @testable import EventBus
+import ConcurrencyExtras
 import EventBusTestSupport
 import Foundation
 import Testing
@@ -38,9 +39,9 @@ struct SimpleBusEventLinkTests {
                 typealias ResponseEvent = LunchResponse
             }
 
+            let lunches = LockIsolated<[String]>([])
             let handler: SamLunchHandler.HandlerType = { _ in
-                let lunch = ColoredFoodTestService.generateFood()
-                logger.debug("🍽️ Sam had \(lunch) for lunch", tag: "eventBus")
+                lunches.withValue { $0.append(ColoredFoodTestService.generateFood()) }
             }
 
             let eventBus = EventBus(defaultTimeout: .milliseconds(300))
@@ -51,6 +52,8 @@ struct SimpleBusEventLinkTests {
             let result = try await SamLunchHandler.sendAndWaitForResponse(eventBus: eventBus)
             #expect(result.busEvent.eventType == ObjectIdentifier(LunchResponse.self))
             #expect(result.busEvent.payload == ())
+            #expect(lunches.value.count == 1)
+            #expect(lunches.value.allSatisfy { ColoredFoodTestService.isFoodValid(food: $0) })
 
             guard let historyLunchEvent: LunchTime.Event = try? result.findFirstEvent(ofType: LunchTime.eventType) else {
                 Issue.record("unexpected nil result on findFirstEvent")
@@ -75,9 +78,10 @@ struct SimpleBusEventLinkTests {
                 typealias ResponseEvent = LunchResponse
             }
 
+            let servedLunches = LockIsolated<[(customer: String, food: String)]>([])
             let handler: SamLunchHandler.HandlerType = { customerName in
                 let lunch = ColoredFoodTestService.generateFood()
-                logger.debug("🍽️ \(customerName) had \(lunch) for lunch", tag: "eventBus")
+                servedLunches.withValue { $0.append((customerName, lunch)) }
                 return lunch
             }
 
@@ -101,6 +105,11 @@ struct SimpleBusEventLinkTests {
             )
             #expect(explicitTimeoutResult.busEvent.eventType == ObjectIdentifier(LunchResponse.self))
             #expect(ColoredFoodTestService.isFoodValid(food: explicitTimeoutResult.busEvent.payload))
+            #expect(servedLunches.value.map(\.customer) == [customerName, customerName])
+            #expect(servedLunches.value.map(\.food) == [
+                result.busEvent.payload,
+                explicitTimeoutResult.busEvent.payload,
+            ])
 
             let historyLunchEvent: LunchTime.Event? = try? result.findFirstEvent(ofType: LunchTime.eventType)
             #expect(historyLunchEvent?.eventType == ObjectIdentifier(LunchTime.self))
@@ -122,9 +131,10 @@ struct SimpleBusEventLinkTests {
                 typealias ResponseEvent = LunchResponse
             }
 
+            let lunches = LockIsolated<[String]>([])
             let handler: SamLunchHandler.HandlerType = { _ in
                 let lunch = ColoredFoodTestService.generateFood()
-                logger.debug("🍽️ Sam had \(lunch) for lunch", tag: "eventBus")
+                lunches.withValue { $0.append(lunch) }
                 return lunch
             }
 
@@ -154,6 +164,11 @@ struct SimpleBusEventLinkTests {
             #expect(explicitTimeoutParamResult.busEvent.eventType == ObjectIdentifier(LunchResponse.self))
             #expect(ColoredFoodTestService.isFoodValid(food: explicitTimeoutParamResult.busEvent.payload))
             #expect(explicitTimeoutParamResult.eventHistory.count == 4)
+            #expect(lunches.value == [
+                chainResult.busEvent.payload,
+                secondResult.busEvent.payload,
+                explicitTimeoutParamResult.busEvent.payload,
+            ])
         }
 
         @Test
@@ -194,9 +209,9 @@ struct SimpleBusEventLinkTests {
                 typealias ResponseEvent = LunchResponse
             }
 
+            let lunches = LockIsolated<[String]>([])
             let handler: SamLunchHandler.HandlerType = { inputEvent in
-                let lunch = ColoredFoodTestService.generateFood()
-                logger.debug("🍽️ Sam had \(lunch) for lunch", tag: "eventBus")
+                lunches.withValue { $0.append(ColoredFoodTestService.generateFood()) }
                 return await inputEvent.appendEvent(LunchResponse.event())
             }
 
@@ -223,6 +238,8 @@ struct SimpleBusEventLinkTests {
             }
             #expect(result2.busEvent.eventType == ObjectIdentifier(LunchResponse.self))
             #expect(result2.busEvent.payload == ())
+            #expect(lunches.value.count == 2)
+            #expect(lunches.value.allSatisfy { ColoredFoodTestService.isFoodValid(food: $0) })
         }
 
         @Test
@@ -253,6 +270,7 @@ struct SimpleBusEventLinkTests {
                 typealias ResponseEvent = OrderResponse
             }
 
+            let servedLunches = LockIsolated<[String]>([])
             let lunchHandler: SamLunchHandler.HandlerType = { inputEvent in
                 guard let lunchOrderResponse = try await DoorDashHandler.sendAndWaitForResponse(
                     inputEvent: inputEvent,
@@ -261,13 +279,14 @@ struct SimpleBusEventLinkTests {
                     throw EventBusError.unexpectedError("unexpected nil response in test")
                 }
                 let food = lunchOrderResponse.busEvent.payload
-                logger.debug("🍽️ Sam had \(food) for lunch", tag: "eventBus")
+                servedLunches.withValue { $0.append(food) }
                 return await lunchOrderResponse.appendEvent(LunchResponse.event(payload: food))
             }
 
+            let foodOrders = LockIsolated<[(customer: String, food: String)]>([])
             let doorDashHandler: DoorDashHandler.HandlerType = { customerName in
                 let food = ColoredFoodTestService.generateFood()
-                logger.debug("🍽️ DoorDash making \(food) for \(customerName)", tag: "eventBus")
+                foodOrders.withValue { $0.append((customerName, food)) }
                 return food
             }
 
@@ -282,6 +301,9 @@ struct SimpleBusEventLinkTests {
             let result = try await SamLunchHandler.sendAndWaitForResponse(eventBus: eventBus)
             #expect(result.busEvent.eventType == ObjectIdentifier(LunchResponse.self))
             #expect(ColoredFoodTestService.isFoodValid(food: result.busEvent.payload))
+            #expect(foodOrders.value.map(\.customer) == ["Sam"])
+            #expect(foodOrders.value.map(\.food) == [result.busEvent.payload])
+            #expect(servedLunches.value == [result.busEvent.payload])
 
             let historyLunchEvent: LunchTime.Event? = try? result.findFirstEvent(ofType: LunchTime.eventType)
             #expect(historyLunchEvent?.eventType == ObjectIdentifier(LunchTime.self))

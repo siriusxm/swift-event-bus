@@ -15,6 +15,7 @@
 //
 
 @testable import EventBus
+import ConcurrencyExtras
 import Foundation
 import Testing
 
@@ -42,7 +43,7 @@ enum EventBusExampleTests {
                     // Note we use the init to pass its parameters as local inline references to the handler's closure.
                     // This avoids self in the handler closure, which would run afoul of swift's chicken-and-egg init problem (pun intended).
                     // Examples in the "separating services and handlers" doc show functions with parameters and return data.
-                    handlers = [EventHandler1.handlerRegistration { logger.info("service 1 invoked with preference: \(config.preference)", tag: "eventBus") }]
+                    handlers = [EventHandler1.handlerRegistration { _ = config.preference }]
                 }
             }
 
@@ -81,37 +82,31 @@ enum EventBusExampleTests {
             // In this example, we are just sending a "fire and forget" event with nothing handling it and want to test the event is being sent.
             // This is tricky to test. It's easier to register a handler so the test can wait to see if the handler was called as in example 1.
             // In this example we're going to demo jumping a few hoops to compensate, and you can compare to other examples using sendAndWait.
-            // The first hoop we jump is a boxed variable we use to set a test flag from an embedded logging function in the test.
-            // This allows us to keep the MySystem class Sendable and hook the log function through its initializer without offending swift.
-            class Box<T>: @unchecked Sendable {
-                var value: T
-                init(_ value: T) {
-                    self.value = value
-                }
-            }
-
             final class MySystem: Sendable {
                 enum LunchTime: SimpleBusEventType {}
                 let eventBus: EventBus
-                let flagWrapper: Box<Bool>
 
-                init(flagWrapper: Box<Bool>) {
-                    self.flagWrapper = flagWrapper
+                // The first hoop we jump is requiring a lock-isolated array of messages to be passed into our "system" class
+                // This will be used to pass messages out of the logging function.
+                init(loggedMessages: LockIsolated<[String]>) {
                     // The EventBus has a built in logger that allows you to define "LogPoints" that you can save and reuse for specific events.
-                    // Here, since the logger is the only entity that's responding to the event, we're stretching the log function to set a test flag.
+                    // Here, since the logger is the only entity that's responding to the event, we're stretching the log function to save off test messages.
                     // Then we can automatically check if the event was sent using a test expectation rather than manually reading the log message.
                     // But coding this way has the downside of relying on EventBus internals for a consistent test. See comments below.
+                   // Logging is disabled unless an output closure is supplied.
                     let logger = EventBusLogger(
                         logPoints: [
                             LogPoint(
                                 logPointType: .sent,
                                 eventType: LunchTime.eventType,
-                                formatPayload: {
-                                    flagWrapper.value = true
-                                    return "LunchTime event sent to EventBus"
-                                }
+                                formatPayload: { "LunchTime event sent to EventBus" }
                             ),
-                        ]
+                        ],
+                        // Here in our logger initialization we populate the "output" hook that is called when the EventBus logs.
+                        // Instead of logging, we save off the log message into our lock-isolated array, so we can verify it later.
+                        output: { message in
+                            loggedMessages.withValue { $0.append(message) }
+                        }
                     )
                     eventBus = EventBus(eventBusLogger: logger)
                 }
@@ -129,20 +124,19 @@ enum EventBusExampleTests {
                 }
             }
 
-            // When you run this test, you can check the console for the EventBusLogger's message the event was sent.
-            // Our test logger code will also automatically set the flag that the function was called as expected so the test will pass.
-            let flagWrapper = Box(false)
-            let mySystem = MySystem(flagWrapper: flagWrapper)
+            let loggedMessages = LockIsolated<[String]>([])
+            let mySystem = MySystem(loggedMessages: loggedMessages)
             // There is a tricky nuance here worth explaining. Normally code like the following is suspicious and can lead to test race conditions.
-            // I.e. Generally when you call an async function, you are not guaranteed it will operate atomically without yielding.
+            // I.e. Generally when you call an async function like lunchLoop(), you are not guaranteed it will operate atomically without yielding.
             // A symptom would be a test that passes when run by itself, but intermittently fails expectations when run with other tests, or on CI.
             // Here we can get away with this consistently by relying on the internals of EventBus.send.
             // It calls the logger function we're using before any yield, so our test variable will be set before the async function returns.
             // It is best practice not to rely on stuff like this, so better to test event sending by integration testing with a handler,
             // ..even an artificial test handler as we put into example 1 above.
-            // This enables us to use a production sendAndWait function where we can insure the handler function runs before the async function returns.
+            // That enables us to use a production sendAndWait function where we can insure the handler function runs before the async function returns.
             await mySystem.lunchLoop()
-            #expect(flagWrapper.value)
+            #expect(loggedMessages.value.count == 1)
+            #expect(loggedMessages.value[0].contains("LunchTime event sent to EventBus"))
         }
 
         // swiftlint:disable nesting
@@ -205,6 +199,7 @@ enum EventBusExampleTests {
             // 1. the trigger event was sent into the EventBus as expected,
             // 2. the EventBus directed the trigger event to a handler (note the Event Sequence Index is the same as for 1), and
             // 3. that the expected SamService handler ran in response with results (and the response event gets a new Event Sequence Index)
+            let loggedMessages = LockIsolated<[String]>([])
             let logger = EventBusLogger(
                 logPoints: [
                     LogPoint(
@@ -224,7 +219,10 @@ enum EventBusExampleTests {
                             "Sam's lunchtime was: \(payload.time), and he: \(payload.result)"
                         }
                     ),
-                ]
+                ],
+                output: { message in
+                    loggedMessages.withValue { $0.append(message) }
+                }
             )
 
             // Here is the system "main loop" or test code. We left out the "lunchLoop" function from the previous example,
@@ -241,6 +239,7 @@ enum EventBusExampleTests {
             #expect(result?.busEvent.payload.result != nil)
             #expect(result?.busEvent.payload.time ?? Date.distantPast > before)
             #expect(result?.busEvent.payload.time ?? Date.distantFuture < after)
+            #expect(loggedMessages.value.count == 3)
         }
 
         // swiftlint:enable nesting
@@ -336,6 +335,7 @@ extension EventBusExampleTests.EventBusReadMeExampleTests {
             }
         }
 
+        let loggedMessages = LockIsolated<[String]>([])
         let logger = EventBusLogger(
             logPoints: [
                 LogPoint(
@@ -367,7 +367,10 @@ extension EventBusExampleTests.EventBusReadMeExampleTests {
                         "Sam's lunchtime was: \(payload.time), and he: \(payload.result) of \(payload.food)"
                     }
                 ),
-            ]
+            ],
+            output: { message in
+                loggedMessages.withValue { $0.append(message) }
+            }
         )
 
         let eventBus = EventBus(eventBusLogger: logger)
@@ -383,5 +386,6 @@ extension EventBusExampleTests.EventBusReadMeExampleTests {
         // the ColoredFoodService.ColoredFoodDelivery response containing the food
         // the SamService.SamLunch response with the accumulated results and history
         #expect(result?.eventHistory.count == 4)
+        #expect(loggedMessages.value.count == 5)
     }
 }

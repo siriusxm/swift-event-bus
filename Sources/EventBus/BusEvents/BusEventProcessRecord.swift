@@ -105,16 +105,8 @@ extension BusEventProcessRecord {
     func matchResponseWithOptions(
         to requestHistoryToMatch: BusEventProcessRecord, matchingOptions: [BusEventMatchingOption]
     ) -> Bool {
-        // warn on multiple options
-        if matchingOptions.count > 1 {
-            let eventType = requestHistoryToMatch.last?.busEvent.eventType ?? "nil"
-            logger.warning("Multiple matching options provided for event \(eventType), only first option will be used", tag: "eventBus")
-        }
-
         // if no matching options provided, anything non-nil matches
         guard let option = matchingOptions.first else {
-            let eventType = requestHistoryToMatch.last?.busEvent.eventType ?? "nil"
-            logger.warning("No matching options provided for event \(eventType), defaulting to nil check", tag: "eventBus")
             return !isEmpty && !requestHistoryToMatch.isEmpty
         }
 

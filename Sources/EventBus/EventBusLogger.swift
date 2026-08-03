@@ -32,8 +32,13 @@ public protocol EventBusLoggable: Sendable {
 }
 
 /// Concrete logger implementation for EventBus events.
-/// Filters which points in an event's lifecycle to log based on configured logPoints.
+///
+/// Logging is disabled unless the caller supplies an output closure. The caller
+/// controls the logging destination and privacy behavior.
+/// Configured log points determine which event lifecycle messages are produced.
 public struct EventBusLogger: EventBusLoggable {
+    public typealias Output = @Sendable (_ message: String) -> Void
+
     // MARK: - Properties
 
     /// The set of log points that should be logged.
@@ -45,9 +50,24 @@ public struct EventBusLogger: EventBusLoggable {
     /// Fixed point in time when the logger was instantiated.
     private let date: Date
 
+    /// User-provided destination for EventBus log messages.
+    private let output: Output?
+
+    /// Creates an EventBus logger with a caller-owned output destination.
+    ///
+    /// If `output` is `nil`, lifecycle messages are disabled and payload formatters
+    /// are not called.
+    ///
+    /// - Parameters:
+    ///   - logPoints: Event lifecycle points that are eligible for logging.
+    ///   - tag: A label included in generated EventBus messages.
+    ///   - output: Receives formatted lifecycle messages.
+    ///     The supplied closure determines the logging destination, severity, and privacy behavior.
+    ///   - date: Supplies the timestamp captured by this logger.
     public init(
         logPoints: [any LogPointable] = [],
         tag: String = "eventBus",
+        output: Output? = nil,
         date: @escaping () -> Date = { .now }
     ) {
         var dictionary: [LogPointKey: AnyLogPoint] = [:]
@@ -59,6 +79,7 @@ public struct EventBusLogger: EventBusLoggable {
 
         self.logPoints = dictionary
         self.tag = tag
+        self.output = output
         self.date = date()
     }
 
@@ -70,6 +91,7 @@ public struct EventBusLogger: EventBusLoggable {
         as logPoint: LogPointType
     ) -> String? {
         guard
+            let output,
             let busEventProcessRecord = erasedEvent.eventHistory.last,
             shouldLog(eventType: erasedEvent.busEvent.eventType, logPointType: logPoint)
         else {
@@ -84,7 +106,7 @@ public struct EventBusLogger: EventBusLoggable {
             payload: erasedEvent.busEvent.payload
         )
 
-        logger.info("\(logString)", tag: tag)
+        output(logString)
         return logString
     }
 
@@ -94,6 +116,7 @@ public struct EventBusLogger: EventBusLoggable {
         as logPoint: LogPointType
     ) -> String? {
         guard
+            let output,
             let busEventProcessRecord = trackedEvent.eventHistory.last,
             shouldLog(eventType: trackedEvent.busEvent.eventType, logPointType: logPoint)
         else {
@@ -108,7 +131,7 @@ public struct EventBusLogger: EventBusLoggable {
             payload: trackedEvent.busEvent.payload
         )
 
-        logger.info("\(logString)", tag: tag)
+        output(logString)
         return logString
     }
 

@@ -56,7 +56,7 @@ struct AnalyticsService: Sendable {
 }
 ```
 
-`.parallel` is the default `concurrencyType` for `RequestResponsePayloadHandler` and `RequestResponseTrackedBusEventHandler`, so every example in the README is also a `.parallel` example. See [readMeExample1()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L26) for the most basic of these.
+`.parallel` is the default `concurrencyType` for `RequestResponsePayloadHandler` and `RequestResponseTrackedBusEventHandler`, so every example in the README is also a `.parallel` example. See [readMeExample1()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L27) for the most basic of these.
 
 ## Serial — concatMap
 
