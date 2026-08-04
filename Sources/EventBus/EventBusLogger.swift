@@ -21,12 +21,8 @@ import Foundation
 public protocol EventBusLoggable: Sendable {
     @discardableResult
     func log(
-        _ trackedEvent: AnyTrackedBusEventType,
-        as logPoint: LogPointType
-    ) -> String?
-    @discardableResult
-    func log(
-        _ erasedEvent: ErasedTrackedBusEvent,
+        _ eventHistory: BusEventProcessRecord,
+        _ busEvent: any BusEventType,
         as logPoint: LogPointType
     ) -> String?
 }
@@ -87,48 +83,24 @@ public struct EventBusLogger: EventBusLoggable {
 
     @discardableResult
     public func log(
-        _ erasedEvent: ErasedTrackedBusEvent,
+        _ eventHistory: BusEventProcessRecord,
+        _ busEvent: any BusEventType,
         as logPoint: LogPointType
     ) -> String? {
         guard
             let output,
-            let busEventProcessRecord = erasedEvent.eventHistory.last,
-            shouldLog(eventType: erasedEvent.busEvent.eventType, logPointType: logPoint)
+            let busEventProcessRecord = eventHistory.last,
+            shouldLog(eventType: busEvent.eventType, logPointType: logPoint)
         else {
             return nil
         }
 
         let logString = buildLogString(
             logPoint: logPoint,
-            busEvent: erasedEvent.busEvent,
+            busEvent: busEvent,
             sequence: String(busEventProcessRecord.eventSequenceIndex),
             stepType: String(describing: busEventProcessRecord.stepType),
-            payload: erasedEvent.busEvent.payload
-        )
-
-        output(logString)
-        return logString
-    }
-
-    @discardableResult
-    public func log(
-        _ trackedEvent: AnyTrackedBusEventType,
-        as logPoint: LogPointType
-    ) -> String? {
-        guard
-            let output,
-            let busEventProcessRecord = trackedEvent.eventHistory.last,
-            shouldLog(eventType: trackedEvent.busEvent.eventType, logPointType: logPoint)
-        else {
-            return nil
-        }
-
-        let logString = buildLogString(
-            logPoint: logPoint,
-            busEvent: trackedEvent.busEvent,
-            sequence: String(busEventProcessRecord.eventSequenceIndex),
-            stepType: String(describing: busEventProcessRecord.stepType),
-            payload: trackedEvent.busEvent.payload
+            payload: busEvent.payload
         )
 
         output(logString)

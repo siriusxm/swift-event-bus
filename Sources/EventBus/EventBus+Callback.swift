@@ -152,8 +152,7 @@ extension EventBus {
         _ event: any BusEventType<EventType, Payload>,
         _ history: BusEventProcessRecord
     ) async {
-        let trackedBusEvent = TrackedBusEvent(eventHistory: history, busEvent: event, eventBus: self)
-        eventBusLogger?.log(trackedBusEvent, as: .sent)
+        eventBusLogger?.log(history, event, as: .sent)
         subject.send(history)
     }
 

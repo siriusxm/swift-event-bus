@@ -128,7 +128,6 @@ struct TrackedBusEventTests {
 
     @Test
     func erasedTrackedBusEvent() throws {
-        let testBus = EventBus()
         let testBusEvent = TestColoredFoodEvent(
             eventType: "coloredFood1",
             payload: TestPayloadWithColoredFood(eventType: "payloadEvent")
@@ -136,23 +135,14 @@ struct TrackedBusEventTests {
         let testEventHistory = [testEventBusStepRecord0, testEventBusStepRecord1]
         let testEventWithBus = ErasedTrackedBusEvent(
             eventHistory: testEventHistory,
-            busEvent: testBusEvent,
-            eventBus: testBus
+            busEvent: testBusEvent
         )
         let erasedBusEvent = try #require(testEventWithBus.busEvent as? TestColoredFoodEvent)
 
-        #expect(testEventWithBus.eventBusCallback != nil)
         #expect(testEventWithBus.eventHistory.count == testEventHistory.count)
         #expect(testEventWithBus.eventHistory[0].eventSequenceIndex == testEventHistory[0].eventSequenceIndex)
         #expect(testEventWithBus.eventHistory[1].eventSequenceIndex == testEventHistory[1].eventSequenceIndex)
         #expect(erasedBusEvent.eventType == testBusEvent.eventType)
         #expect(erasedBusEvent.payload.eventType == testBusEvent.payload.eventType)
-
-        let testEventNoBus = ErasedTrackedBusEvent(
-            eventHistory: [],
-            busEvent: testColoredFoodEvent(eventType: "coloredFood1"),
-            eventBus: nil
-        )
-        #expect(testEventNoBus.eventBusCallback == nil)
     }
 }
