@@ -71,7 +71,7 @@ extension EventBusDeepExampleTests {
             let colorService = ColorService(serviceCall: serviceCall)
             let colorHandler = ColorHandler(colorService: colorService)
             var eventBus: EventBus? = EventBus(defaultTimeout: .milliseconds(Constants.timeoutMilliseconds))
-            weak var weakEventBus = eventBus
+            weak let weakEventBus = eventBus
             eventBus?.register(handlers: colorHandler.handlers)
 
             let responseTask: Task<ColorHandler.NewColor.TrackedResponse, Error>
@@ -166,7 +166,7 @@ extension EventBusDeepExampleTests {
             let colorHandler = ColorHandler(colorService: colorService)
             let favoriteColorController = FavoriteColorController()
             var eventBus: EventBus? = EventBus(defaultTimeout: .milliseconds(Constants.timeoutMilliseconds))
-            weak var weakEventBus = eventBus
+            weak let weakEventBus = eventBus
             eventBus?.register(handlers: colorHandler.handlers)
             eventBus?.register(handlers: favoriteColorController.handlers)
 

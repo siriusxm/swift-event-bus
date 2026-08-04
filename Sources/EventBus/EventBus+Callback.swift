@@ -59,7 +59,7 @@ extension EventBus: EventBusCallback {
     /// - Parameters:
     ///   - inputEvent: the current event's type identifier
     ///   - resultType: the expected result event's type identifier
-    ///   - matchingOptions: array of options for the result to match to satisfy this function
+    ///   - matchingOption: option for the result to match to satisfy this function
     ///   - timeout: the duration the sender is allowing for the expected response before throwing a timeout error
     /// - Returns: if successful, a TrackedBusEvent wrapping the expected response type
     ///            (note that because of swift generic requirements, you will probably have to explicitly type the return statement)
@@ -70,14 +70,14 @@ extension EventBus: EventBusCallback {
     >(
         _ inputEvent: BusEvent<some Equatable & Sendable, some Sendable>,
         resultType: ResultEventType,
-        matchingOptions: [BusEventMatchingOption],
+        matchingOption: BusEventMatchingOption,
         timeout: Duration
     ) async throws -> TrackedBusEvent<ResultEventType, ResultPayload> {
         try await _sendAndWaitForMatchingResult(
             nil,
             inputEvent,
             resultType: resultType,
-            matchingOptions: matchingOptions,
+            matchingOption: matchingOption,
             timeout: timeout
         )
     }
@@ -87,7 +87,7 @@ extension EventBus: EventBusCallback {
     ///   - previousEvent: The event record of the previous event chain to which you want to add the current event's processing.
     ///   - inputEvent: The input event to send into the bus.
     ///   - resultType: The expected result event's type identifier.
-    ///   - matchingOptions: Array of options for the result to match to satisfy this function.
+    ///   - matchingOption: option for the result to match to satisfy this function
     ///   - timeout: The duration the sender is allowing for the expected response before throwing a timeout error.
     /// - Returns: A `TrackedBusEvent` wrapping the expected response type.
     /// - Throws: `EventBusError.timeoutError` if the response is not received within the specified timeout, or other error thrown by the handler.
@@ -98,14 +98,14 @@ extension EventBus: EventBusCallback {
         _ previousEvent: AnyTrackedBusEventType,
         _ inputEvent: BusEvent<some Equatable & Sendable, some Sendable>,
         resultType: ResultEventType,
-        matchingOptions: [BusEventMatchingOption],
+        matchingOption: BusEventMatchingOption,
         timeout: Duration
     ) async throws -> TrackedBusEvent<ResultEventType, ResultPayload> {
         try await _sendAndWaitForMatchingResult(
             previousEvent,
             inputEvent,
             resultType: resultType,
-            matchingOptions: matchingOptions,
+            matchingOption: matchingOption,
             timeout: timeout
         )
     }
@@ -162,11 +162,11 @@ extension EventBus {
         inputEvent: InputEvent,
         result eventTypeToMatch: EventType,
         requestEvent: BusEventProcessRecord,
-        matchingOptions: [BusEventMatchingOption]
+        matchingOption: BusEventMatchingOption
     ) -> AsyncThrowingStream<TrackedBusEvent<EventType, Payload>, Error> {
         subject
             .bufferedValues
-            .filter { $0.matchResponseWithOptions(to: requestEvent, matchingOptions: matchingOptions) }
+            .filter { $0.matchResponseWithOption(to: requestEvent, matchingOption: matchingOption) }
             .compactMap { record in
                 if let typedBusEvent = record.busEvent as? any BusEventType<EventType, Payload>,
                    typedBusEvent.eventType == eventTypeToMatch
@@ -193,7 +193,7 @@ extension EventBus {
         _ previousEvent: AnyTrackedBusEventType? = nil,
         _ inputEvent: BusEvent<some Equatable & Sendable, some Sendable>,
         resultType: ResultEventType,
-        matchingOptions: [BusEventMatchingOption],
+        matchingOption: BusEventMatchingOption,
         timeout: Duration
     ) async throws -> TrackedBusEvent<ResultEventType, ResultPayload> {
         let history = history(with: inputEvent, and: previousEvent)
@@ -205,7 +205,7 @@ extension EventBus {
             inputEvent: inputEvent,
             result: resultType,
             requestEvent: history,
-            matchingOptions: matchingOptions
+            matchingOption: matchingOption
         )
         await send(inputEvent, history)
 

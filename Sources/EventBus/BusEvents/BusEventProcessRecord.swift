@@ -24,16 +24,12 @@ public enum BusEventStepType: String, Sendable {
 }
 
 public enum BusEventMatchingOption: Sendable {
-    public enum ResponseOption: Sendable {
-        // request must be immediately before the response in event history
-        // (use with caution, can be broken when process is refactored)
-        case direct
-        // request can be anywhere before response in response's event history
-        case indirect
-    }
-
-    // match only responses to a specific request instance
-    case matchResponse(ResponseOption)
+    /// Requires the request to be immediately before the response in the event history.
+    ///
+    /// Use with caution: refactoring the process to include nested events can break this relationship.
+    case directResponse
+    /// Requires the request to appear anywhere before the response in the response's event history.
+    case indirectResponse
 }
 
 /// records a single step in processing a BusEvent, either sending into the bus as a request, or being handled by a handler
@@ -102,22 +98,14 @@ extension BusEventProcessRecord {
     }
 
     // Currently the only "matching" results are direct or indirect response to a request, so only one option is allowed.
-    func matchResponseWithOptions(
-        to requestHistoryToMatch: BusEventProcessRecord, matchingOptions: [BusEventMatchingOption]
+    func matchResponseWithOption(
+        to requestHistoryToMatch: BusEventProcessRecord, matchingOption: BusEventMatchingOption
     ) -> Bool {
-        // if no matching options provided, anything non-nil matches
-        guard let option = matchingOptions.first else {
-            return !isEmpty && !requestHistoryToMatch.isEmpty
-        }
-
-        switch option {
-        case let .matchResponse(responseOption):
-            switch responseOption {
-            case .direct:
-                return isDirectResponse(to: requestHistoryToMatch)
-            case .indirect:
-                return isIndirectResponse(to: requestHistoryToMatch)
-            }
+        switch matchingOption {
+        case .directResponse:
+            return isDirectResponse(to: requestHistoryToMatch)
+        case .indirectResponse:
+            return isIndirectResponse(to: requestHistoryToMatch)
         }
     }
 }

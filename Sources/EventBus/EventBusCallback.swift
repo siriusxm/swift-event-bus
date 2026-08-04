@@ -42,7 +42,7 @@ public protocol EventBusCallback: Sendable {
     /// - Parameters:
     ///   - inputEvent: the current event's type identifier
     ///   - resultType: the expected result event's type identifier
-    ///   - matchingOptions: array of options for the result to match to satisfy this function
+    ///   - matchingOption: option for the result to match to satisfy this function
     ///   - timeout: the duration the sender is allowing for the expected response before throwing a timeout error
     /// - Returns: if successful, a TrackedBusEvent wrapping the expected response type
     ///            (note that because of swift generic requirements, you will probably have to explicitly type the return statement)
@@ -54,7 +54,7 @@ public protocol EventBusCallback: Sendable {
     (
         _ inputEvent: BusEvent<some Equatable & Sendable, some Sendable>,
         resultType: ResultEventType,
-        matchingOptions: [BusEventMatchingOption],
+        matchingOption: BusEventMatchingOption,
         timeout: Duration
     ) async throws -> TrackedBusEvent<ResultEventType, ResultPayload>
 
@@ -63,7 +63,7 @@ public protocol EventBusCallback: Sendable {
     ///   - previousEvent: the event record of the previous event chain to which you want to add the current event's processing
     ///   - inputEvent: the current event's type identifier
     ///   - resultType: the expected result event's type identifier
-    ///   - matchingOptions: array of options for the result to match to satisfy this function
+    ///   - matchingOption: option for the result to match to satisfy this function
     ///   - timeout: the duration the sender is allowing for the expected response before throwing a timeout error
     /// - Returns: if successful, a TrackedBusEvent wrapping the expected response type
     ///            (note that because of swift generic requirements, you will probably have to explicitly type the return statement)
@@ -75,7 +75,7 @@ public protocol EventBusCallback: Sendable {
         _ previousEvent: AnyTrackedBusEventType,
         _ inputEvent: BusEvent<some Equatable & Sendable, some Sendable>,
         resultType: ResultEventType,
-        matchingOptions: [BusEventMatchingOption],
+        matchingOption: BusEventMatchingOption,
         timeout: Duration
     ) async throws -> TrackedBusEvent<ResultEventType, ResultPayload>
 

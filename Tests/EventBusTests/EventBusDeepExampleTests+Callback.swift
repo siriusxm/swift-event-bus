@@ -78,7 +78,7 @@ extension EventBusDeepExampleTests {
             let timer = DeallocPeriodicEventTimer()
             let periodicColorHandler = PeriodicColorHandler(colorService: colorService, timer: timer)
             var eventBus: EventBus? = EventBus(defaultTimeout: .milliseconds(Constants.timeoutMilliseconds))
-            weak var weakEventBus = eventBus
+            weak let weakEventBus = eventBus
             eventBus?.register(handlers: periodicColorHandler.handlers)
 
             if let eventBus {
@@ -167,7 +167,7 @@ extension EventBusDeepExampleTests {
             let colorService = DeallocLegacyColorService(expectedColor: Constants.expectedColor)
             let legacyColorHandler = LegacyColorHandler(colorService: colorService)
             var eventBus: EventBus? = EventBus(defaultTimeout: .milliseconds(Constants.timeoutMilliseconds))
-            weak var weakEventBus = eventBus
+            weak let weakEventBus = eventBus
             eventBus?.register(handlers: legacyColorHandler.handlers)
 
             if let eventBus {
