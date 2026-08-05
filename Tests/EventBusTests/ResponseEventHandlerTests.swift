@@ -249,33 +249,40 @@ enum EventBusResponseEventHandlerTests {
 
         @Test
         func simpleBusEventSendTest() async {
-            // this test makes sure all the send function variations get their events into the bus properly
-            // it leaves out handler registration and verifying that the events are handled, which is covered elsehwere
-            let mockLogger = MockEventSavingBusLogger()
-            let eventBus = EventBus(eventBusLogger: mockLogger)
-
             // Void payload events call the non-void send internally, so this test covers both
             enum LunchTime: SimpleBusEventType {
                 typealias Payload = Void
             }
 
+            // Verify both send variants reach a real handler. `send` intentionally returns before handling finishes,
+            // so the test handler records each input event and the test awaits that observation.
+            let eventBus = EventBus()
+            let recorder = EventHistoryTestRecorder()
+
+            enum LunchTimeObserver: ResponseTrackedBusEventHandler {
+                typealias TriggerEvent = LunchTime
+            }
+
+            let observer: LunchTimeObserver.HandlerType = { inputEvent in
+                await recorder.record(inputEvent.eventHistory)
+                return nil
+            }
+            eventBus.register(handlers: [LunchTimeObserver.handlerRegistration(observer)])
+
             // send version that takes an EventBus directly
             await LunchTime.send(eventBus: eventBus)
-            guard let sentTrackedEvent1 = mockLogger.latestEvents().last as? LunchTime.TrackedEvent else {
-                Issue.record("unexpected nil event from MockEventSavingBusLogger")
-                return
-            }
-            #expect(sentTrackedEvent1.busEvent.eventType == LunchTime.eventType)
-            mockLogger.clearEvents()
+            let directSendHistory = await recorder.nextHistory()
+            let directHistoryEventType = directSendHistory.last?.busEvent.eventType as? LunchTime.Event.EventType
+            #expect(directHistoryEventType == LunchTime.eventType)
+            #expect(directSendHistory.count == 1)
 
             // send version that takes a TrackedBusEvent to chain to the new event
-            await LunchTime.send(inputEvent: sentTrackedEvent1)
-            guard let sentTrackedEvent2 = mockLogger.latestEvents().last as? LunchTime.TrackedEvent else {
-                Issue.record("unexpected nil event from MockEventSavingBusLogger")
-                return
-            }
-            #expect(sentTrackedEvent2.busEvent.eventType == LunchTime.eventType)
-            #expect(sentTrackedEvent2.eventHistory.count == 2)
+            let inputEvent = LunchTime.TrackedEvent(busEvent: LunchTime.event(), eventBus: eventBus)
+            await LunchTime.send(inputEvent: inputEvent)
+            let chainedSendHistory = await recorder.nextHistory()
+            let chainedHistoryEventType = chainedSendHistory.last?.busEvent.eventType as? LunchTime.Event.EventType
+            #expect(chainedHistoryEventType == LunchTime.eventType)
+            #expect(chainedSendHistory.count == 2)
         }
     }
 }

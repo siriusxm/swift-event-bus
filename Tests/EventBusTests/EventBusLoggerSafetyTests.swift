@@ -43,7 +43,8 @@ struct EventBusLoggerSafetyTests {
             ]
         )
 
-        let log = logger.log(trackedEvent(for: event), as: .sent)
+        let trackedEvent = trackedEvent(for: event)
+        let log = logger.log(trackedEvent.eventHistory, trackedEvent.busEvent, as: .sent)
 
         #expect(log == nil)
         #expect(!formatterCalled.value)
@@ -64,7 +65,8 @@ struct EventBusLoggerSafetyTests {
             output: { message in outputMessages.withValue { $0.append(message) } }
         )
 
-        logger.log(trackedEvent(for: event), as: .sent)
+        let trackedEvent = trackedEvent(for: event)
+        logger.log(trackedEvent.eventHistory, trackedEvent.busEvent, as: .sent)
 
         #expect(outputMessages.value.count == 1)
         #expect(outputMessages.value[0].contains(Constants.payload))
@@ -72,8 +74,8 @@ struct EventBusLoggerSafetyTests {
 
     private func trackedEvent(
         for event: BusEvent<String, String>
-    ) -> ErasedTrackedBusEvent {
-        ErasedTrackedBusEvent(
+    ) -> TrackedBusEvent<String, String> {
+        TrackedBusEvent(
             eventHistory: [
                 BusEventProcessStepRecord(
                     busEvent: event,

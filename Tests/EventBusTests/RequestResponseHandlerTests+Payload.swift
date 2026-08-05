@@ -153,45 +153,51 @@ enum EventBusRequestResponseEventHandlerTests {
 
         @Test
         func requestResponseVoidSendConveniencesTest() async {
-            let mockLogger = MockEventSavingBusLogger()
-            let eventBus = EventBus(eventBusLogger: mockLogger)
-
             enum PayloadHandler: RequestResponsePayloadHandler {}
 
             enum TrackedHandler: RequestResponseTrackedBusEventHandler {}
 
+            let eventBus = EventBus()
+            let payloadRecorder = EventHistoryTestRecorder()
+            let trackedRecorder = EventHistoryTestRecorder()
+
+            let payloadHandler: PayloadHandler.HandlerType = { _ in
+                await payloadRecorder.record([])
+            }
+            let trackedHandler: TrackedHandler.HandlerType = { inputEvent in
+                await trackedRecorder.record(inputEvent.eventHistory)
+                return nil
+            }
+            eventBus.register(handlers: [
+                PayloadHandler.handlerRegistration(payloadHandler),
+                TrackedHandler.handlerRegistration(trackedHandler),
+            ])
+
             await PayloadHandler.send(eventBus: eventBus)
-            guard let payloadInitialEvent = mockLogger.latestEvents().last as? PayloadHandler.TrackedRequest else {
-                Issue.record("unexpected nil event from MockEventSavingBusLogger")
-                return
-            }
-            #expect(payloadInitialEvent.busEvent.eventType == PayloadHandler.requestID)
+            _ = await payloadRecorder.nextHistory()
 
-            mockLogger.clearEvents()
-            await PayloadHandler.send(inputEvent: payloadInitialEvent)
-            guard let payloadChainedEvent = mockLogger.latestEvents().last as? PayloadHandler.TrackedRequest else {
-                Issue.record("unexpected nil event from MockEventSavingBusLogger")
-                return
-            }
-            #expect(payloadChainedEvent.busEvent.eventType == PayloadHandler.requestID)
-            #expect(payloadChainedEvent.eventHistory.count == 2)
+            let payloadInputEvent = PayloadHandler.TrackedRequest(
+                busEvent: PayloadHandler.request(),
+                eventBus: eventBus
+            )
+            await PayloadHandler.send(inputEvent: payloadInputEvent)
+            _ = await payloadRecorder.nextHistory()
 
-            mockLogger.clearEvents()
             await TrackedHandler.send(eventBus: eventBus)
-            guard let trackedInitialEvent = mockLogger.latestEvents().last as? TrackedHandler.TrackedRequest else {
-                Issue.record("unexpected nil event from MockEventSavingBusLogger")
-                return
-            }
-            #expect(trackedInitialEvent.busEvent.eventType == TrackedHandler.requestID)
+            let trackedDirectSendHistory = await trackedRecorder.nextHistory()
+            let lastHistoryEventType = trackedDirectSendHistory.last?.busEvent.eventType as? TrackedHandler.Request.EventType
+            #expect(lastHistoryEventType == TrackedHandler.requestID)
+            #expect(trackedDirectSendHistory.count == 1)
 
-            mockLogger.clearEvents()
-            await TrackedHandler.send(inputEvent: trackedInitialEvent)
-            guard let trackedChainedEvent = mockLogger.latestEvents().last as? TrackedHandler.TrackedRequest else {
-                Issue.record("unexpected nil event from MockEventSavingBusLogger")
-                return
-            }
-            #expect(trackedChainedEvent.busEvent.eventType == TrackedHandler.requestID)
-            #expect(trackedChainedEvent.eventHistory.count == 2)
+            let trackedInputEvent = TrackedHandler.TrackedRequest(
+                busEvent: TrackedHandler.request(),
+                eventBus: eventBus
+            )
+            await TrackedHandler.send(inputEvent: trackedInputEvent)
+            let trackedChainedSendHistory = await trackedRecorder.nextHistory()
+            let chainedHistoryEventType = trackedChainedSendHistory.last?.busEvent.eventType as? TrackedHandler.Request.EventType
+            #expect(chainedHistoryEventType == TrackedHandler.requestID)
+            #expect(trackedChainedSendHistory.count == 2)
         }
 
         @Test

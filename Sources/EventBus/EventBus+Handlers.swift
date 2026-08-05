@@ -208,9 +208,9 @@ extension EventBus {
         publish: @escaping @Sendable ([Result?]) -> Void
     ) async {
         do {
-            eventBusLogger?.log(inputEvent, as: .enteredHandler)
+            eventBusLogger?.log(inputEvent.eventHistory, inputEvent.busEvent, as: .enteredHandler)
             let events = try await handler(inputEvent.busEvent.payload) ?? []
-            eventBusLogger?.log(inputEvent, as: .exitedHandler)
+            eventBusLogger?.log(inputEvent.eventHistory, inputEvent.busEvent, as: .exitedHandler)
             publish(events)
         } catch {
             notifyErrorObservers(about: error, for: inputEvent)
@@ -230,9 +230,9 @@ extension EventBus {
                 stepType: .handlerResult,
                 historyProcessRecord: previousHistory
             )
-            return ErasedTrackedBusEvent(eventHistory: history, busEvent: event, eventBus: self)
+            return ErasedTrackedBusEvent(eventHistory: history, busEvent: event)
         }.forEach {
-            eventBusLogger?.log($0, as: .responded)
+            eventBusLogger?.log($0.eventHistory, $0.busEvent, as: .responded)
             subject.send($0.eventHistory)
         }
     }
@@ -241,16 +241,15 @@ extension EventBus {
         about resultEvents: [AnyTrackedBusEventType?]
     ) {
         notifyCommonObservers(about: resultEvents) { [weak self] trackedEvent in
-            guard let self else {
+            guard self != nil else {
                 return nil
             }
             return ErasedTrackedBusEvent(
                 eventHistory: trackedEvent.eventHistory,
-                busEvent: trackedEvent.busEvent,
-                eventBus: self
+                busEvent: trackedEvent.busEvent
             )
         }.forEach {
-            eventBusLogger?.log($0, as: .responded)
+            eventBusLogger?.log($0.eventHistory, $0.busEvent, as: .responded)
             subject.send($0.eventHistory)
         }
     }

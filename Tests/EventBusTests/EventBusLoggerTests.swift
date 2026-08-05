@@ -40,24 +40,11 @@ private final class EventBusLoggerWrapper: @unchecked Sendable, EventBusLoggable
     }
 
     func log(
-        _ trackedEvent: AnyTrackedBusEventType,
+        _ eventHistory: BusEventProcessRecord,
+        _ busEvent: any BusEventType,
         as logPoint: LogPointType
     ) -> String? {
-        let erasedTrackedBusEvent = ErasedTrackedBusEvent(
-            eventHistory: trackedEvent.eventHistory, busEvent: trackedEvent.busEvent, eventBus: trackedEvent.eventBusCallback
-        )
-        guard let str = realLogger.log(erasedTrackedBusEvent, as: logPoint) else {
-            return nil
-        }
-        recordExpectedLogHit(str)
-        return str
-    }
-
-    func log(
-        _ erasedEvent: ErasedTrackedBusEvent,
-        as logPoint: LogPointType
-    ) -> String? {
-        guard let str = realLogger.log(erasedEvent, as: logPoint) else {
+        guard let str = realLogger.log(eventHistory, busEvent, as: logPoint) else {
             return nil
         }
         recordExpectedLogHit(str)
@@ -258,7 +245,7 @@ struct EventBusLoggerTests {
             output: { _ in },
             date: { createStaticDate() }
         )
-        let trackedEvent = ErasedTrackedBusEvent(
+        let trackedEvent = TrackedBusEvent(
             eventHistory: [
                 BusEventProcessStepRecord(
                     busEvent: event,
@@ -270,7 +257,7 @@ struct EventBusLoggerTests {
             eventBus: nil
         )
 
-        let log = logger.log(trackedEvent, as: .errored(LoggerCoverageError.expected))
+        let log = logger.log(trackedEvent.eventHistory, event, as: .errored(LoggerCoverageError.expected))
 
         #expect(log?.contains(LoggerCoverageConstants.eventType) == true)
         #expect(log?.contains(LoggerCoverageConstants.nilPayloadLogLine) == true)

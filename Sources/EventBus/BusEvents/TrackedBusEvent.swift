@@ -33,29 +33,16 @@ public protocol TrackedBusEventType<EventType, Payload>: Sendable {
 /// Used to type-erase TrackedBusEvent primitives.
 public typealias AnyTrackedBusEventType = any TrackedBusEventType
 
-/// Protocol for type-erased tracked bus events with untyped event access.
-public protocol AnyTrackedBusEventTypeProtocol: Sendable {
-    var eventBusCallback: EventBusCallback? { get }
-    var eventHistory: BusEventProcessRecord { get }
-    var busEvent: any BusEventType { get }
-}
-
 /// A type-erased container for tracked bus events.
 ///
-/// Use this when you need to store or pass tracked events without preserving their specific type information.
-public struct ErasedTrackedBusEvent: AnyTrackedBusEventTypeProtocol {
-    public var eventBusCallback: EventBusCallback? {
-        eventBus
-    }
-
+/// Used internally to store or pass tracked events without preserving their specific type information.
+struct ErasedTrackedBusEvent: Sendable {
     public let eventHistory: BusEventProcessRecord
     public let busEvent: any BusEventType
-    private weak var eventBus: EventBus?
 
-    public init(eventHistory: BusEventProcessRecord, busEvent: any BusEventType, eventBus: EventBusCallback?) {
+    public init(eventHistory: BusEventProcessRecord, busEvent: any BusEventType) {
         self.eventHistory = eventHistory
         self.busEvent = busEvent
-        self.eventBus = eventBus as? EventBus
     }
 }
 
