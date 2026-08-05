@@ -25,7 +25,6 @@ public enum BusEventStepType: String, Sendable {
 
 public enum BusEventMatchingOption: Sendable {
     /// Requires the request to be immediately before the response in the event history.
-    ///
     /// Use with caution: refactoring the process to include nested events can break this relationship.
     case directResponse
     /// Requires the request to appear anywhere before the response in the response's event history.
@@ -97,7 +96,7 @@ extension BusEventProcessRecord {
         return nil
     }
 
-    // Currently the only "matching" results are direct or indirect response to a request, so only one option is allowed.
+    // Currently the only "matching" results are direct or indirect response to a request.
     func matchResponseWithOption(
         to requestHistoryToMatch: BusEventProcessRecord, matchingOption: BusEventMatchingOption
     ) -> Bool {
