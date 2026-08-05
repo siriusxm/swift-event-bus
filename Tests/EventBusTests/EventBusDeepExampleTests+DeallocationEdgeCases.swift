@@ -95,7 +95,7 @@ extension EventBusDeepExampleTests {
                 operation: serviceCall
             )
             var eventBus: EventBus? = EventBus(defaultTimeout: .milliseconds(Constants.timeoutMilliseconds))
-            weak var weakEventBus = eventBus
+            weak let weakEventBus = eventBus
             eventBus?.register(handlers: [
                 FireAndForgetColor.handlerRegistration {
                     await colorService.nextColor()
@@ -133,7 +133,7 @@ extension EventBusDeepExampleTests {
                 operation: serviceCall
             )
             var eventBus: EventBus? = EventBus(defaultTimeout: .milliseconds(Constants.timeoutMilliseconds))
-            weak var weakEventBus = eventBus
+            weak let weakEventBus = eventBus
             eventBus?.register(handlers: [
                 ThrowingColor.handlerRegistration {
                     try await colorService.throwingColor()
@@ -184,7 +184,7 @@ extension EventBusDeepExampleTests {
                 operation: serviceCall
             )
             var eventBus: EventBus? = EventBus(defaultTimeout: .milliseconds(Constants.timeoutMilliseconds))
-            weak var weakEventBus = eventBus
+            weak let weakEventBus = eventBus
             eventBus?.register(handlers: [
                 RestartColor.handlerRegistration { inputEvent in
                     let color = await colorService.nextColor()
@@ -227,7 +227,7 @@ extension EventBusDeepExampleTests {
                 secondCall: secondCall
             )
             var eventBus: EventBus? = EventBus(defaultTimeout: .milliseconds(Constants.timeoutMilliseconds))
-            weak var weakEventBus = eventBus
+            weak let weakEventBus = eventBus
             eventBus?.register(handlers: [
                 ParallelColor.handlerRegistration { request in
                     await colorService.nextColor(for: request)

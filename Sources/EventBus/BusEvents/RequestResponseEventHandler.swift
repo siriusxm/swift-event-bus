@@ -151,7 +151,7 @@ public extension RequestResponsePayloadHandler {
             inputEvent,
             request(payload: payload),
             resultType: responseID,
-            matchingOptions: [.matchResponse(.direct)],
+            matchingOption: .directResponse,
             timeout: timeout ?? inputEvent.eventBusCallback?.defaultTimeout ?? .zero
         )
     }
@@ -174,7 +174,7 @@ public extension RequestResponsePayloadHandler {
         try await eventBus.sendAndWaitForMatchingResult(
             request(payload: payload),
             resultType: responseID,
-            matchingOptions: [.matchResponse(.direct)],
+            matchingOption: .directResponse,
             timeout: timeout ?? eventBus.defaultTimeout
         )
     }
@@ -232,7 +232,7 @@ public extension RequestResponseTrackedBusEventHandler {
             inputEvent,
             request(payload: payload),
             resultType: responseID,
-            matchingOptions: [.matchResponse(.indirect)],
+            matchingOption: .indirectResponse,
             timeout: timeout ?? inputEvent.eventBusCallback?.defaultTimeout ?? .zero
         )
     }
@@ -256,7 +256,7 @@ public extension RequestResponseTrackedBusEventHandler {
         try await eventBus.sendAndWaitForMatchingResult(
             request(payload: payload),
             resultType: responseID,
-            matchingOptions: [.matchResponse(.indirect)],
+            matchingOption: .indirectResponse,
             timeout: timeout ?? eventBus.defaultTimeout
         )
     }

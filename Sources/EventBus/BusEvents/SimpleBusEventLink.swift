@@ -49,7 +49,7 @@ public extension SimpleBusEventLink {
             inputEvent,
             TriggerEvent.event(payload: payload),
             resultType: ResponseEvent.eventType,
-            matchingOptions: [.matchResponse(.indirect)],
+            matchingOption: .indirectResponse,
             timeout: timeout ?? inputEvent.eventBusCallback?.defaultTimeout ?? .zero
         )
     }
@@ -73,7 +73,7 @@ public extension SimpleBusEventLink {
         try await eventBus.sendAndWaitForMatchingResult(
             TriggerEvent.event(payload: payload),
             resultType: ResponseEvent.eventType,
-            matchingOptions: [.matchResponse(.indirect)],
+            matchingOption: .indirectResponse,
             timeout: timeout ?? eventBus.defaultTimeout
         )
     }

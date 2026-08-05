@@ -171,7 +171,7 @@ extension EventBusDeepExampleTests {
                     )
                 ),
                 resultType: ManualBusEventType.complete,
-                matchingOptions: [.matchResponse(.indirect)],
+                matchingOption: .indirectResponse,
                 timeout: .milliseconds(300)
             )
 

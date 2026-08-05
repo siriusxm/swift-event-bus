@@ -133,7 +133,7 @@ struct EventStreamTests {
                 payload: TestPayloadWithColoredFood(eventType: EventStreamConstants.colorServiceEventType)
             ),
             resultType: EventStreamFoodEvent.eventType,
-            matchingOptions: [.matchResponse(.direct)],
+            matchingOption: .directResponse,
             timeout: EventStreamConstants.defaultTimeout
         )
 
@@ -161,7 +161,7 @@ struct EventStreamTests {
                     payload: TestPayloadWithColoredFood(eventType: EventStreamConstants.colorServiceEventType)
                 ),
                 resultType: EventStreamFoodEvent.eventType,
-                matchingOptions: [.matchResponse(.direct)],
+                matchingOption: .directResponse,
                 timeout: EventStreamConstants.tooShortTimeout
             )
             Issue.record("Expected timeout error, got result: \(result.busEvent.eventType)")
@@ -185,7 +185,7 @@ struct EventStreamTests {
                     payload: TestPayloadWithColoredFood(eventType: EventStreamConstants.colorServiceEventType)
                 ),
                 resultType: EventStreamFoodEvent.eventType,
-                matchingOptions: [.matchResponse(.direct)],
+                matchingOption: .directResponse,
                 timeout: EventStreamConstants.defaultTimeout
             )
             Issue.record("Expected EventStreamColorServiceError, got result: \(result.busEvent.eventType)")
