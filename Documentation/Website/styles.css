@@ -110,55 +110,16 @@ pre {
 .lockup-bus {
     display: block;
     flex: 0 0 auto;
-    margin-left: 2px;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.18));
 }
 
-.sxm-lockup {
-    display: inline-flex;
-    align-items: flex-start;
-    flex-direction: column;
-    line-height: 1;
-}
-
-.sxm-cap {
-    display: block;
-    width: 102px;
-    height: 12px;
-    background: #0000eb;
-}
-
-.sxm-lockup-row {
-    display: flex;
-    height: 27px;
-    align-items: center;
-}
-
-.sxm-wordmark {
-    display: block;
-    width: 102px;
-    height: 27px;
-    padding: 4px 3px 3px;
-    object-fit: contain;
-}
-
-.sxm-subbrand {
-    display: inline-flex;
-    min-width: 0;
-    height: 22px;
-    align-items: center;
-    justify-content: center;
-    padding: 0 3px;
-    background: #0000eb;
-    color: #ffffff;
+.product-name {
     font-family: "Helvetica Now Variable Display", "Helvetica Now Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 18px;
+    font-size: 20px;
     font-style: normal;
-    font-weight: 950;
+    font-weight: 800;
     letter-spacing: -0.05em;
     line-height: 1;
-    -webkit-text-stroke: 0.25px currentColor;
-    text-transform: none;
 }
 
 .site-nav {
@@ -1111,8 +1072,9 @@ a.resource-card:hover {
     gap: 27px;
 }
 
-.footer-brand { font-size: 15px; }
-.footer-inner p { margin: 0; color: #4a4a54; font-size: 11px; }
+.footer-brand { flex: 0 0 225px; font-size: 15px; }
+.footer-inner p { flex: 0 1 285px; margin: 0; color: #4a4a54; font-size: 11px; }
+.footer-inner p span { display: block; }
 .site-footer nav {
     display: flex;
     margin-left: auto;
