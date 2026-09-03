@@ -73,10 +73,9 @@ public struct MySystem: Sendable {
 
     // Public system APIs call EventBus internally.
     public func sendLunchTime() async {
-        // Events manage their integration through reusable protocol
-        // functions.
-        // They send themselves, so you do not maintain matching
-        // lists of event IDs.
+        // Events manage their integration through reusable protocol functions.
+        // So events send themselves, 
+        // and you do not have to maintain or match lists of event IDs.
         await LunchTime.send(eventBus: eventBus)
     }
 }
@@ -93,14 +92,14 @@ Next, add a handler for that broadcast event. The handler uses `ResponsePayloadH
 struct MySystem: Sendable {
     // ...
     // Introduce a decoupled service into our system.
-    // Services stay independent of the bus and handlers and can be
-    // injected as dependencies.
+    // Services stay independent of the bus and handlers 
+    // and can be injected as dependencies.
     let lunchService: LunchService
 
     init(lunchService: LunchService) {
         self.lunchService = lunchService
-        // Register handlers synchronously during initialization, so
-        // clients can call APIs immediately without racing setup.
+        // Register handlers synchronously during initialization,
+        // so clients can call APIs immediately without race conditions.
         eventBus.register(handlers: lunchHandlers)
     }
     // ...
@@ -119,11 +118,11 @@ extension MySystem {
 
     var lunchHandlers: [any Handlable] {
         [
-            // handlerRegistration binds the handler function to its
-            // event type and routing information.
+            // handlerRegistration binds the handler function 
+            // to its event type and routing information.
             // The triggering event type becomes the routing ID,
             // so mismatches fail at compile time.
-            // The handler is an inline closure. 
+            // This example handler is an inline closure. 
             // You can also pass a reference to a conforming function.
             EatLunch.handlerRegistration {
                 lunchService.eat()
@@ -150,7 +149,7 @@ struct GreetingApiService: Sendable {
 // This example uses a delegate handler rather than the extension above.
 struct GreetingHandler: Sendable {
     // The inline service keeps this example brief; 
-    // production code would normally inject the dependency.
+    // production code would normally inject a dependency.
     let greetingApiService = GreetingApiService()
 
     // This protocol ties request and response event types to a handler function.
@@ -162,10 +161,10 @@ struct GreetingHandler: Sendable {
 
     var handlers: [any Handlable] {
         [
-            // The payload handler unwraps the request payload into
-            // this closure's parameter.
-            // It wraps the closure's return in a response event and
-            // sends it to the bus.
+            // The payload handler unwraps the request payload 
+            // into this closure's parameter.
+            // It wraps the closure's return in a response event 
+            // and sends it to the bus.
             MakeGreeting.handlerRegistration { (name: String) in
                 await greetingApiService.makeGreeting(name: name)
             },
