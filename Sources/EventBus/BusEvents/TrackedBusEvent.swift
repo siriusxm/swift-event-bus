@@ -54,7 +54,7 @@ struct ErasedTrackedBusEvent: Sendable {
 public struct TrackedBusEvent<EventType: Equatable & Sendable, Payload: Sendable>: TrackedBusEventType {
     public let eventHistory: BusEventProcessRecord
     public let busEvent: any BusEventType<EventType, Payload>
-    private weak var eventBus: EventBus?
+    private weak let eventBus: EventBus?
 
     public var eventBusCallback: EventBusCallback? {
         eventBus

@@ -119,7 +119,7 @@ extension EventBusDeepExampleTests {
                 }
 
                 actor EventBusCallbacks: DeallocLegacyColorCallbacks {
-                    private weak var eventBus: EventBus?
+                    private weak let eventBus: EventBus?
 
                     init(eventBus: (any EventBusCallback)?) {
                         self.eventBus = eventBus as? EventBus
