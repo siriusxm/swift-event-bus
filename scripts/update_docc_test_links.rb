@@ -3,7 +3,10 @@
 require "uri"
 
 repository_root = File.expand_path("..", __dir__)
-documentation_glob = File.join(repository_root, "Sources/EventBus/Documentation.docc/**/*.md")
+documentation_paths = Dir.glob(
+  File.join(repository_root, "Sources/EventBus/Documentation.docc/**/*.md")
+).sort
+documentation_paths << File.join(repository_root, "README.md")
 check_only = ARGV.include?("--check")
 
 link_pattern = %r{
@@ -14,7 +17,7 @@ link_pattern = %r{
 
 updates = []
 
-Dir.glob(documentation_glob).sort.each do |documentation_path|
+documentation_paths.each do |documentation_path|
   original = File.read(documentation_path)
   revised = original.gsub(link_pattern) do
     label = Regexp.last_match(1)
@@ -44,7 +47,7 @@ Dir.glob(documentation_glob).sort.each do |documentation_path|
 end
 
 if updates.empty?
-  puts "DocC test link anchors are current."
+  puts "Documentation test link anchors are current."
   exit 0
 end
 
@@ -54,7 +57,7 @@ updates.each do |documentation_path, label, current_line, updated_line|
 end
 
 if check_only
-  warn "DocC test link anchors are stale. Run: ruby scripts/update_docc_test_links.rb"
+  warn "Documentation test link anchors are stale. Run: ruby scripts/update_docc_test_links.rb"
   exit 1
 end
 
