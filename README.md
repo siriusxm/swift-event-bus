@@ -25,7 +25,7 @@ Use the `EventBus` when asynchronous interactions between services are becoming 
 - Declarative per-handler concurrency: `.parallel`, `.serial`, or `.restart`.
 - Event history that traces multi-step workflows across nested handlers.
 - Built-in timeouts and structured error propagation through async chains.
-- Macros for named tracked-event types and low-boilerplate structured payload construction. See <doc:EventGuide#Integrating-Complex-Payloads>.
+- Macros for named tracked-event types and low-boilerplate structured payload construction. See [the guide to integrating complex payloads](https://siriusxm.github.io/swift-event-bus/docs/documentation/eventbus/eventguide/#Integrating-Complex-Payloads).
 
 ## Installation
 
@@ -60,18 +60,22 @@ The simplest event is a broadcast or "fire and forget" event. This example syste
 ```swift
 import EventBus
 
-// Declare a type that represents your system and owns the `EventBus`, services, handlers, and event definitions.
+// Define the system type that owns the EventBus, services, handlers,
+// and event definitions.
 public struct MySystem: Sendable {
-    // Events are declared as types. By conforming to `SimpleBusEventType` events inherit its protocol functions.
+    // Events are types. Conforming to SimpleBusEventType gives them
+    // its protocol functions.
     enum LunchTime: SimpleBusEventType {}
 
-    // Having your system object be the single owner of `EventBus` helps manage setup and teardown as your system scales.
+    // Making the system the sole owner of EventBus helps manage
+    // setup and teardown as it grows.
     private let eventBus = EventBus()
 
-    // Your system's public API functions call the `EventBus` internally.
+    // Public system APIs call EventBus internally.
     public func sendLunchTime() async {
-        // Events manage all their integration through reusable protocol functions.
-        // So events know how to send themselves, and you do not have to maintain or match lists of event IDs.
+        // Events manage their integration through reusable protocol functions.
+        // So events send themselves, 
+        // and you do not have to maintain or match lists of event IDs.
         await LunchTime.send(eventBus: eventBus)
     }
 }
@@ -80,42 +84,46 @@ let system = MySystem()
 await system.sendLunchTime()
 ```
 
-For a more complete example, see ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample2()``
+For a more complete example, see [readMeExample2()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L81).
 
-Next, add a handler for that broadcast event. The handler uses `ResponsePayloadHandler`, registers on the same bus, and responds to the `LunchTime` event by eating lunch. See <doc:EventGuide#Handler-Internals> for an overview of handler protocol types.
+Next, add a handler for that broadcast event. The handler uses `ResponsePayloadHandler`, registers on the same bus, and responds to the `LunchTime` event by eating lunch. See [Handler internals](https://siriusxm.github.io/swift-event-bus/docs/documentation/eventbus/eventguide/#Handler-Internals) for an overview of handler protocol types.
 
 ```swift
 struct MySystem: Sendable {
     // ...
     // Introduce a decoupled service into our system.
-    // Services can be kept pure of any reference to the bus or handlers, and can be injected as dependencies.
+    // Services stay independent of the bus and handlers 
+    // and can be injected as dependencies.
     let lunchService: LunchService
 
     init(lunchService: LunchService) {
         self.lunchService = lunchService
-        // Attach handlers to the bus in a synchronous init function.
-        // This allows clients to call APIs immediately without race conditions.
+        // Register handlers synchronously during initialization,
+        // so clients can call APIs immediately without race conditions.
         eventBus.register(handlers: lunchHandlers)
     }
     // ...
 }
 
 // Handlers are functions that receive and process events.
-// Groups of handler functions can be maintained as extensions or delegates of the system type.
+// Group handler functionss in extensions or delegates of the system type.
 
 extension MySystem {
-    // Handlers are declared the same way as events, by conforming to protocols.
-    // Note how this handler references the `LunchTime` event declared above as its `TriggerEvent`.
-    // Note also it is declared as a "payload" handler though the payload defaults to `Void` so is not seen.
+    // Like events, handlers are types that conform to protocols.
+    // This handler's TriggerEvent is the LunchTime event declared above.
+    // This is a payload handler with a default Void payload which is not shown.
     enum EatLunch: ResponsePayloadHandler {
         typealias TriggerEvent = LunchTime
     }
 
     var lunchHandlers: [any Handlable] {
         [
-            // This `handlerRegistration` function is doing a lot of integration heavy lifting.
-            // It uses the triggering event's type as the event routing ID, which moves error checking to compile time.
-            // Here the handler function is declared inline as a closure. You can also pass a conforming function reference.
+            // handlerRegistration binds the handler function 
+            // to its event type and routing information.
+            // The triggering event type becomes the routing ID,
+            // so mismatches fail at compile time.
+            // This example handler is an inline closure. 
+            // You can also pass a reference to a conforming function.
             EatLunch.handlerRegistration {
                 lunchService.eat()
             },
@@ -124,7 +132,7 @@ extension MySystem {
 }
 ```
 
-For a more complete example, see ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample3()``
+For a more complete example, see [readMeExample3()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L144).
 
 Request-response event pairs wrap a decoupled API call as an inline `async`/`await` function. This example defines a `MakeGreeting` API, registers its handler, and invokes the API inline with `sendAndWaitForResponse`.
 
@@ -132,19 +140,20 @@ Request-response event pairs wrap a decoupled API call as an inline `async`/`awa
 import EventBus
 
 struct GreetingApiService: Sendable {
-    // The external API would go here. Using a placeholder non-async string.
+    // The external API would go here; use a placeholder string for now.
     func makeGreeting(name: String) async -> String {
         "Hello, \(name)!"
     }
 }
 
-// This example uses a delegate handler as opposed to the above example's extension.
+// This example uses a delegate handler rather than the extension above.
 struct GreetingHandler: Sendable {
-    // Declaring the service inline for brevity. Usually you would want an injected dependency.
+    // The inline service keeps this example brief; 
+    // production code would normally inject a dependency.
     let greetingApiService = GreetingApiService()
 
-    // This protocol type declares request and response event types together with their handler function.
-    // This example also introduces payloads, populated here with `String`s.
+    // This protocol ties request and response event types to a handler function.
+    // This example also introduces String payloads.
     enum MakeGreeting: RequestResponsePayloadHandler {
         typealias RequestPayload = String
         typealias ResponsePayload = String
@@ -152,8 +161,10 @@ struct GreetingHandler: Sendable {
 
     var handlers: [any Handlable] {
         [
-            // The payload handler integration unwraps the request event payload into this closure's parameter,
-            // ..then takes the closure's return and automatically wraps it into a response event and sends to the bus.
+            // The payload handler unwraps the request payload 
+            // into this closure's parameter.
+            // It wraps the closure's return in a response event 
+            // and sends it to the bus.
             MakeGreeting.handlerRegistration { (name: String) in
                 await greetingApiService.makeGreeting(name: name)
             },
@@ -171,8 +182,10 @@ struct GreetingSystem: Sendable {
     }
 
     func greet(_ name: String) async throws -> String {
-        // Here's where the `sendAndWaitForResponse` function sends the request event and waits for the response event inline.
-        // This integrates event-driven decoupling of your components with Swift's `async`/`await` processing.
+        // sendAndWaitForResponse sends the request 
+        // and waits for a response inline.
+        // This combines event-driven decoupling 
+        // with Swift's async/await processing.
         try await GreetingHandler.MakeGreeting
             .sendAndWaitForResponse(eventBus: eventBus, payload: name)
             .busEvent
@@ -185,17 +198,17 @@ let system = GreetingSystem(greetingHandler: handler)
 let message = try await system.greet("Sam")
 ```
 
-For another example, see ``EventBusTests/EventBusExampleTests/EventBusReadMeExampleTests/readMeExample1()``
+For another example, see [readMeExample1()](https://github.com/siriusxm/swift-event-bus/blob/main/Tests/EventBusTests/EventBusReadMeExampleTests.swift#L27).
 
 ## Core Concepts
 
 ### Events
 
-The `EventBus` defines two event primitives: `BusEvent` and `TrackedBusEvent`. To make these easier to use, the `EventBus` also defines a set of Swift protocols that automate usage of events and their handler functions. The `SimpleBusEventType`, `ResponsePayloadHandler`, and `RequestResponsePayloadHandler` from the above examples are three common protocols, and there are several other variations. For a reference organized by use case, see <doc:EventGuide#Event-Use-Case-Reference>; for a list of all protocols, see <doc:EventGuide#Event-Internals>.
+The `EventBus` defines two event primitives: `BusEvent` and `TrackedBusEvent`. To make these easier to use, the `EventBus` also defines a set of Swift protocols that automate usage of events and their handler functions. The `SimpleBusEventType`, `ResponsePayloadHandler`, and `RequestResponsePayloadHandler` from the above examples are three common protocols, and there are several other variations. For a reference organized by use case, see [Event use case reference](https://siriusxm.github.io/swift-event-bus/docs/documentation/eventbus/eventguide/#Event-Use-Case-Reference); for a list of all protocols, see [Event internals](https://siriusxm.github.io/swift-event-bus/docs/documentation/eventbus/eventguide/#Event-Internals).
 
 ### Handlers
 
-We use the term `Handler` for both the functions that respond to `BusEvent`s and to the objects that hold those functions. The `EventBus` allows flexibility in how handler functions are integrated and organized. See <doc:EventGuide#Handler-Internals>.
+We use the term `Handler` for both the functions that respond to `BusEvent`s and to the objects that hold those functions. The `EventBus` allows flexibility in how handler functions are integrated and organized. See [Handler internals](https://siriusxm.github.io/swift-event-bus/docs/documentation/eventbus/eventguide/#Handler-Internals).
 
 ### Concurrency
 
@@ -205,14 +218,14 @@ Each handler definition can specify how `EventBus` runs concurrent invocations:
 - `.serial` queues invocations and runs one at a time.
 - `.restart` cancels in-flight invocations when a newer event arrives.
 
-See <doc:ConcurrencyTypes> for examples and selection guidance.
+See [Concurrency types](https://siriusxm.github.io/swift-event-bus/docs/documentation/eventbus/concurrencytypes/) for examples and selection guidance.
 
 ## Further Documentation
 
-- <doc:EventGuide>: reference for Events and Handlers.
-- <doc:EventBusVsDirectCall>: for system architecture, when to use `EventBus` events and handlers vs direct function calls.
-- <doc:FactoringComplexSystems>: service and handler boundaries, `Sendable` guidance, deallocation, and weak callback patterns.
-- <doc:Pipelining>: modeling multi-step async workflows as readable event pipelines.
+- [Event guide](https://siriusxm.github.io/swift-event-bus/docs/documentation/eventbus/eventguide/): reference for Events and Handlers.
+- [EventBus vs. direct call systems](https://siriusxm.github.io/swift-event-bus/docs/documentation/eventbus/eventbusvsdirectcall/): when to use `EventBus` events and handlers vs. direct function calls.
+- [Factoring complex systems with EventBus](https://siriusxm.github.io/swift-event-bus/docs/documentation/eventbus/factoringcomplexsystems/): service and handler boundaries, `Sendable` guidance, deallocation, and weak callback patterns.
+- [Pipelining](https://siriusxm.github.io/swift-event-bus/docs/documentation/eventbus/pipelining/): modeling multi-step async workflows as readable event pipelines.
 
 ## Project Status
 
