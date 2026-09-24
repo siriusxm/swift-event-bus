@@ -37,7 +37,7 @@ jobs:
             --target EventBus \
             --disable-indexing \
             --transform-for-static-hosting \
-            --hosting-base-path docs \
+            --hosting-base-path swift-event-bus/docs \
             --output-path "$RUNNER_TEMP/eventbus-docc"
           mkdir -p pages-output/docs
           cp -R "$RUNNER_TEMP/eventbus-docc/." pages-output/docs/
@@ -49,7 +49,7 @@ jobs:
           test -d pages-output/docs/css
           test -n "$(find pages-output/docs/js -type f -name '*.js' -print -quit)"
           test -n "$(find pages-output/docs/css -type f -name '*.css' -print -quit)"
-          grep -Fq 'var baseUrl = "/docs/"' pages-output/docs/documentation/eventbus/index.html
+          grep -Fq 'var baseUrl = "/swift-event-bus/docs/"' pages-output/docs/documentation/eventbus/index.html
       - name: Upload Pages artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4

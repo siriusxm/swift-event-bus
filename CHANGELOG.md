@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Initial event bus implementation.
 
+### Fixed
+- Corrected the GitHub Pages base path so the DocC documentation loads its assets.
+
 <!--
 When cutting a release, move the Unreleased entries under a new version
 heading that matches the git tag exactly, e.g.:
