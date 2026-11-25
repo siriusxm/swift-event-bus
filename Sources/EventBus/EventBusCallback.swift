@@ -20,7 +20,8 @@ import Foundation
 public protocol EventBusCallback: Sendable {
     var defaultTimeout: Duration { get }
 
-    /// Cancels ongoing operations in handlers that match the provided input event.
+    /// Cancels active handler invocations that match the provided input event and discards matching
+    /// pending serial handler invocations before they begin.
     ///
     /// - Parameter event: Only operations matching this event will be cancelled.
     func cancelHandlers(for event: any Equatable & Sendable) async

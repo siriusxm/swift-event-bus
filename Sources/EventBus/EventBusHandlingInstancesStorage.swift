@@ -19,41 +19,134 @@ import Foundation
 
 final class EventBusHandlingInstancesStorage: Sendable {
     typealias EventType = Equatable & Sendable
+
     private struct HandlerTask: Sendable {
         let inputEventType: any EventType
+        let serialInputEventSequenceIndex: EventSequenceIndex?
         let task: Task<Void, Never>
     }
 
-    private let handlerTasks = LockIsolated<[UUID: HandlerTask]>([:])
+    private struct SerialCancellationCutoff: Sendable {
+        let inputEventType: any EventType
+        var eventSequenceIndex: EventSequenceIndex
+    }
+
+    private struct State: Sendable {
+        var handlerTasks: [UUID: HandlerTask] = [:]
+        var serialCancellationCutoffs: [SerialCancellationCutoff] = []
+    }
+
+    private let state = LockIsolated(State())
 
     func addHandling(task: Task<Void, Never>, for event: any EventType) -> UUID {
         let uuid = UUID()
-        handlerTasks.withValue { $0[uuid] = HandlerTask(inputEventType: event, task: task) }
+        state.withValue { state in
+            state.handlerTasks[uuid] = HandlerTask(
+                inputEventType: event,
+                serialInputEventSequenceIndex: nil,
+                task: task
+            )
+        }
         return uuid
     }
 
-    func removeHandlingTask(with uuid: UUID) {
-        handlerTasks.withValue { $0[uuid] = nil }
+    func addSerialHandling<T: EventType>(
+        task: Task<Void, Never>,
+        for event: T,
+        at eventSequenceIndex: EventSequenceIndex
+    ) -> UUID? {
+        let uuid = UUID()
+        return state.withValue { state in
+            if serialCancellationCutoff(for: event, in: state).map({ eventSequenceIndex <= $0 }) ?? false {
+                return nil
+            }
+
+            state.handlerTasks[uuid] = HandlerTask(
+                inputEventType: event,
+                serialInputEventSequenceIndex: eventSequenceIndex,
+                task: task
+            )
+            return uuid
+        }
     }
 
-    func cancelHandlingTasks<T: EventType>(for event: T) {
-        handlerTasks.withValue { dict in
-            let matchingUUIDs = dict.compactMap { uuid, handlerTask in
-                if let storedEvent = handlerTask.inputEventType as? T, storedEvent == event {
+    func removeHandlingTask(with uuid: UUID) {
+        state.withValue { $0.handlerTasks[uuid] = nil }
+    }
+
+    func cancelHandlingTasks<T: EventType>(
+        for event: T,
+        through cancellationCutoff: EventSequenceIndex
+    ) {
+        state.withValue { state in
+            recordSerialCancellationCutoff(cancellationCutoff, for: event, in: &state)
+            let matchingUUIDs = state.handlerTasks.compactMap { uuid, handlerTask in
+                if eventsMatch(handlerTask.inputEventType, event),
+                   handlerTask.serialInputEventSequenceIndex.map({ $0 <= cancellationCutoff }) ?? true
+                {
                     return uuid
                 }
                 return nil
             }
 
             for uuid in matchingUUIDs {
-                dict[uuid]?.task.cancel()
-                dict.removeValue(forKey: uuid)
+                state.handlerTasks[uuid]?.task.cancel()
+                state.handlerTasks.removeValue(forKey: uuid)
             }
         }
     }
 
     func replaceAllHandlingTasks(with task: Task<Void, Never>, matching event: any EventType) -> UUID {
-        cancelHandlingTasks(for: event)
+        cancelActiveHandlingTasks(for: event)
         return addHandling(task: task, for: event)
+    }
+
+    private func cancelActiveHandlingTasks<T: EventType>(for event: T) {
+        state.withValue { state in
+            let matchingUUIDs = state.handlerTasks.compactMap { uuid, handlerTask in
+                eventsMatch(handlerTask.inputEventType, event) ? uuid : nil
+            }
+
+            for uuid in matchingUUIDs {
+                state.handlerTasks[uuid]?.task.cancel()
+                state.handlerTasks.removeValue(forKey: uuid)
+            }
+        }
+    }
+
+    private func recordSerialCancellationCutoff<T: EventType>(
+        _ eventSequenceIndex: EventSequenceIndex,
+        for event: T,
+        in state: inout State
+    ) {
+        if let index = state.serialCancellationCutoffs.firstIndex(where: {
+            eventsMatch($0.inputEventType, event)
+        }) {
+            state.serialCancellationCutoffs[index].eventSequenceIndex = max(
+                state.serialCancellationCutoffs[index].eventSequenceIndex,
+                eventSequenceIndex
+            )
+        } else {
+            state.serialCancellationCutoffs.append(SerialCancellationCutoff(
+                inputEventType: event,
+                eventSequenceIndex: eventSequenceIndex
+            ))
+        }
+    }
+
+    private func serialCancellationCutoff<T: EventType>(
+        for event: T,
+        in state: State
+    ) -> EventSequenceIndex? {
+        state.serialCancellationCutoffs.first {
+            eventsMatch($0.inputEventType, event)
+        }?.eventSequenceIndex
+    }
+
+    private func eventsMatch<T: EventType>(_ storedEvent: any EventType, _ event: T) -> Bool {
+        guard let typedStoredEvent = storedEvent as? T else {
+            return false
+        }
+        return typedStoredEvent == event
     }
 }
