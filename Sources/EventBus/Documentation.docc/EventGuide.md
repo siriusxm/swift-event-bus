@@ -430,6 +430,22 @@ For further examples of best practices using pipelining in `TrackedBusEventHandl
 
 For examples of how to use weak `EventBus` references from `TrackedBusEventHandler`s, see <doc:FactoringComplexSystems#Weak-EventBus-References>.
 
+## Cancelling Handler Invocations
+
+The `EventBus` allows you to cancel handler invocations by their input `EventType`. Call `cancelHandlers(for:)` with the same event ID used to register the handlers. For a simple event, it is the `eventID`, for a request-response handler, this is the handler's `requestID`:
+
+```swift
+await eventBus.cancelHandlers(for: ColoredFoodService.ColoredFoodDelivery.requestID)
+```
+
+Cancellation applies to all active handler invocations that match the input `EventType`, regardless of their payload or which handler object registered them. It cancels the currently running invocations, but does not remove their handler registrations from the `EventBus`. Matching events sent after the cancellation request can invoke the same handlers normally. This is in contrast to the `EventBus` `remove` functions, which remove handler registrations so they no longer receive events.
+
+The `EventBus` implements cancellation using Swift's cooperative task cancellation. It calls `Task.cancel()` on each matching handler task, which marks the task as cancelled but does not forcibly stop the handler function. Cancellation-aware asynchronous functions may throw `CancellationError`, and handlers can explicitly check their status with `Task.checkCancellation()`. It is a best practice to check for cancellation before expensive operations and before any change to application or persistent state.
+
+When a handler throws `CancellationError`, the `EventBus` propagates it like any other handler error. A caller waiting for that handler through a `sendAndWait` function receives the error. A handler that does not respond to cancellation may continue running and return normally, so cancelling its task does not by itself guarantee that the waiting caller will receive `CancellationError`.
+
+Cancellation uses the same cooperative behavior for all concurrency types, but the concurrency type determines which invocations can exist when cancellation occurs. A `.parallel` handler can have multiple active invocations, while a `.restart` handler automatically cancels its previous invocation when a new event arrives. A `.serial` handler can have both an active invocation and events waiting in its queue, so it has additional cancellation behavior for pending events. See <doc:ConcurrencyTypes#Serial-—-concatMap> for details. For examples of placing cancellation checks within multi-step processes, see <doc:Pipelining#Cancellation-In-Pipeline-Functions>.
+
 ## Logging Events
 
 The `EventBus` provides an integrated `EventBusLogger` that you can use to help with tracing and troubleshooting. To prevent any inadvertent logging of proprietary, private, or sensitive information, logging is disabled by default. To enable logging at your discretion, supply an `output` closure integrated with your approved logger when initializing `EventBusLogger`, then pass that logger to `EventBus`. The closure controls the output destination and the logging level.

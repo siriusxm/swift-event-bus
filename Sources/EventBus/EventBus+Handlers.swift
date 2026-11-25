@@ -75,7 +75,7 @@ extension EventBus {
         subscription(to: eventToMatch)
             .buffer(size: maxBufferSize, prefetch: .keepFull, whenFull: .dropNewest)
             .asyncMap(priority: priority) { [weak self] typedTrackedEvent in
-                await self?.performCancellableOperation(
+                await self?.performSerialCancellableOperation(
                     for: eventToMatch,
                     typedTrackedEvent: typedTrackedEvent
                 ) { eventBus, trackedEvent in
@@ -96,7 +96,7 @@ extension EventBus {
         subscription(to: eventToMatch)
             .buffer(size: maxBufferSize, prefetch: .keepFull, whenFull: .dropNewest)
             .asyncMap(priority: priority) { [weak self] typedTrackedEvent in
-                await self?.performCancellableOperation(
+                await self?.performSerialCancellableOperation(
                     for: eventToMatch,
                     typedTrackedEvent: typedTrackedEvent
                 ) { eventBus, trackedEvent in
@@ -122,6 +122,33 @@ extension EventBus {
         let handlerID = handlingInstances.addHandling(task: task, for: eventToMatch)
         await task.value
         handlingInstances.removeHandlingTask(with: handlerID)
+    }
+
+    private func performSerialCancellableOperation<EventType: Equatable & Sendable, Payload: Sendable>(
+        for eventToMatch: EventType,
+        typedTrackedEvent: TrackedBusEvent<EventType, Payload>,
+        operation: @escaping @Sendable (EventBus, TrackedBusEvent<EventType, Payload>) async -> Void
+    ) async {
+        let inputEventSequenceIndex = typedTrackedEvent.eventHistory.currentEventSequenceIndex ?? .min
+        let deferredTask = DeferredStartTask { [weak self] in
+            guard let self else {
+                return
+            }
+            await operation(self, typedTrackedEvent)
+        }
+        if let handlerID = handlingInstances.addSerialHandling(
+            task: deferredTask.task,
+            for: eventToMatch,
+            at: inputEventSequenceIndex
+        ) {
+            deferredTask.start()
+            await deferredTask.waitForCompletion()
+            handlingInstances.removeHandlingTask(with: handlerID)
+        } else {
+            deferredTask.discard()
+            await deferredTask.waitForCompletion()
+            notifyErrorObservers(about: CancellationError(), for: typedTrackedEvent)
+        }
     }
 
     func attachRestartTrackedBusEventHandler<EventType: Equatable & Sendable, Payload: Sendable>(

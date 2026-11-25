@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Corrected the GitHub Pages base path so the DocC documentation loads its assets.
+- Cancelled pending serial handler invocations when cancelling by event type.
 
 <!--
 When cutting a release, move the Unreleased entries under a new version
